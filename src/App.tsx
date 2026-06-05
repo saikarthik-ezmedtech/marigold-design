@@ -35,7 +35,9 @@ type BaseRoutePath =
   | '/medical-supplies'
   | '/resources'
   | '/insurance-accepted'
-  | '/contact-us';
+  | '/contact-us'
+  | '/refill-prescription'
+  | '/transfer-prescription';
 
 type RoutePath = BaseRoutePath | `/services/${string}`;
 
@@ -70,6 +72,59 @@ const navItems: NavItem[] = [
   { path: '/resources', label: 'Resources', subtitle: 'Useful Links' },
   { path: '/contact-us', label: 'Contact Us', subtitle: 'Keep in Touch' },
 ];
+
+const usStates = [
+  'Alabama',
+  'Alaska',
+  'Arizona',
+  'Arkansas',
+  'California',
+  'Colorado',
+  'Connecticut',
+  'Delaware',
+  'Florida',
+  'Georgia',
+  'Hawaii',
+  'Idaho',
+  'Illinois',
+  'Indiana',
+  'Iowa',
+  'Kansas',
+  'Kentucky',
+  'Louisiana',
+  'Maine',
+  'Maryland',
+  'Massachusetts',
+  'Michigan',
+  'Minnesota',
+  'Mississippi',
+  'Missouri',
+  'Montana',
+  'Nebraska',
+  'Nevada',
+  'New Hampshire',
+  'New Jersey',
+  'New Mexico',
+  'New York',
+  'North Carolina',
+  'North Dakota',
+  'Ohio',
+  'Oklahoma',
+  'Oregon',
+  'Pennsylvania',
+  'Rhode Island',
+  'South Carolina',
+  'South Dakota',
+  'Tennessee',
+  'Texas',
+  'Utah',
+  'Vermont',
+  'Virginia',
+  'Washington',
+  'West Virginia',
+  'Wisconsin',
+  'Wyoming',
+] as const;
 
 const serviceCards: ServiceCard[] = [
   {
@@ -711,6 +766,14 @@ function getCurrentRoute(pathname: string): RoutePath {
     return '/insurance-accepted';
   }
 
+  if (path === '/refill-prescription') {
+    return '/refill-prescription';
+  }
+
+  if (path === '/transfer-prescription') {
+    return '/transfer-prescription';
+  }
+
   if (path.startsWith('/services/')) {
     const slug = path.replace('/services/', '');
     if (serviceCards.some((item) => item.slug === slug)) {
@@ -1253,6 +1316,10 @@ function App() {
     };
   }, [accessibilitySettings.tooltips]);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [route]);
+
   const navigate = (path: RoutePath) => {
     if (path === route) {
       setIsMobileMenuOpen(false);
@@ -1295,7 +1362,7 @@ function App() {
         onToggleMenu={() => setIsMobileMenuOpen((value) => !value)}
         onNavigate={navigate}
       />
-      <div aria-hidden="true" className="h-[5.6rem] sm:h-[6.1rem]" />
+      <div aria-hidden="true" className="h-[7.4rem] sm:h-[6.5rem]" />
 
       {route === '/' ? <HomePage onNavigate={navigate} /> : null}
       {route === '/about-us' ? <AboutPage onNavigate={navigate} /> : null}
@@ -1304,8 +1371,10 @@ function App() {
       {route === '/medical-supplies' ? <MedicalSuppliesPage /> : null}
       {route === '/resources' ? <ResourcesPage /> : null}
       {route === '/insurance-accepted' ? <InsuranceAcceptedPage onNavigate={navigate} /> : null}
+      {route === '/refill-prescription' ? <RefillPrescriptionPage /> : null}
+      {route === '/transfer-prescription' ? <TransferPrescriptionPage /> : null}
       {route === '/contact-us' ? <ContactPage /> : null}
-      {!['/', '/about-us', '/services', '/medical-supplies', '/resources', '/insurance-accepted', '/contact-us'].includes(route) && !currentService ? <NotFoundPage onNavigate={navigate} /> : null}
+      {!['/', '/about-us', '/services', '/medical-supplies', '/resources', '/insurance-accepted', '/contact-us', '/refill-prescription', '/transfer-prescription'].includes(route) && !currentService ? <NotFoundPage onNavigate={navigate} /> : null}
 
       <Footer route={route} onNavigate={navigate} />
 
@@ -1358,6 +1427,7 @@ function SiteHeader({
   const isHeroHeaderRoute = route === '/' || route === '/about-us';
   const [closeDropdown, setCloseDropdown] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -1384,7 +1454,7 @@ function SiteHeader({
       <div className="bg-[var(--gold)] text-[var(--charcoal)]">
         <div className="mx-auto flex max-w-[1440px] flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-3 py-1.5 text-center sm:px-6 sm:py-2">
           <p className="text-[0.62rem] font-medium leading-[1.3] sm:leading-none sm:text-[0.72rem] lg:text-[0.84rem]">
-            Proudly serving Kissimmee with personalized pharmacy care and free local delivery.
+            Personalized pharmacy care and free local delivery for Kissimmee.
           </p>
           <span className="hidden h-4 w-px bg-[rgba(26,65,85,0.35)] sm:block" aria-hidden="true" />
           <a
@@ -1537,33 +1607,46 @@ function SiteHeader({
         </button>
       </div>
 
-      {isMobileMenuOpen ? (
-        <div className="absolute inset-x-0 top-full border-t border-[rgba(15,118,110,0.1)] bg-[#f7f4eb] px-4 py-4 sm:px-6 lg:hidden shadow-[0_20px_40px_rgba(15,23,42,0.15)]">
-          <div className="space-y-3">
-            {navItems.map((item) => {
-              const isActive = route === item.path || (route.startsWith('/services/') && item.path === '/services');
-              const isContactItem = item.path === '/contact-us';
+      <AnimatePresence initial={false}>
+        {isMobileMenuOpen ? (
+          <motion.div
+            key="mobile-menu"
+            initial={prefersReducedMotion ? false : { opacity: 0, y: -12 }}
+            animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -12 }}
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute inset-x-0 top-full border-t border-[rgba(15,118,110,0.1)] bg-[#f7f4eb] px-4 py-4 shadow-[0_20px_40px_rgba(15,23,42,0.15)] sm:px-6 lg:hidden"
+          >
+            <div className="space-y-3">
+              {navItems.map((item, index) => {
+                const isActive = route === item.path || (route.startsWith('/services/') && item.path === '/services');
+                const isContactItem = item.path === '/contact-us';
 
-              return (
-                <button
-                  key={item.path}
-                  type="button"
-                  onClick={() => handleNavigate(item.path)}
-                  className={`block w-full px-4 py-3 text-center font-heading text-[1.1rem] font-medium tracking-[-0.01em] ${
-                    isContactItem
-                      ? 'text-[var(--gold)]'
-                      : isActive
-                        ? 'text-[var(--teal)]'
-                        : 'text-[var(--charcoal)]'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
+                return (
+                  <motion.button
+                    key={item.path}
+                    type="button"
+                    onClick={() => handleNavigate(item.path)}
+                    initial={prefersReducedMotion ? false : { opacity: 0, y: -8 }}
+                    animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+                    exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2, delay: index * 0.03 }}
+                    className={`block w-full rounded-[1.2rem] px-4 py-3 text-center font-heading text-[1.1rem] font-medium tracking-[-0.01em] transition-colors ${
+                      isContactItem
+                        ? 'text-[var(--gold)]'
+                        : isActive
+                          ? 'text-[var(--teal)]'
+                          : 'text-[var(--charcoal)]'
+                    }`}
+                  >
+                    {item.label}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
     </header>
   );
@@ -1666,14 +1749,14 @@ function HomePage({ onNavigate }: { onNavigate: (path: RoutePath) => void }) {
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
-                onClick={() => onNavigate('/contact-us')}
+                onClick={() => onNavigate('/refill-prescription')}
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--gold)] px-6 py-3.5 text-sm font-semibold text-[var(--charcoal)] shadow-[0_18px_40px_rgba(244,180,0,0.28)] transition-transform duration-300 hover:-translate-y-0.5 hover:bg-[#ffd04d]"
               >
                 Refill prescription
               </button>
               <button
                 type="button"
-                onClick={() => onNavigate('/services')}
+                onClick={() => onNavigate('/transfer-prescription')}
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-white/12 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(10,51,47,0.22)] ring-1 ring-white/24 transition-transform duration-300 hover:-translate-y-0.5 hover:bg-white/18"
               >
                 Transfer prescription
@@ -2479,7 +2562,7 @@ function ServicesPage({ onNavigate }: { onNavigate: (path: RoutePath) => void })
   const hasMoreServices = visibleServiceCount < serviceCards.length;
 
   return (
-    <section className="section-pad pt-6 sm:pt-8 lg:pt-10 relative overflow-hidden min-h-[50vh]">
+    <section className="section-pad pt-10 sm:pt-8 lg:pt-10 relative overflow-hidden min-h-[50vh]">
       <div className="page-shell relative z-10">
         <div className="overflow-hidden rounded-[34px] bg-transparent shadow-none">
           <div className="relative isolate px-4 pt-0 pb-5 sm:px-6 sm:pt-0 sm:pb-6 lg:px-8 lg:pt-0 lg:pb-8">
@@ -2564,6 +2647,18 @@ function ServiceDetailPage({
   onNavigate: (path: RoutePath) => void;
 }) {
   const relatedServices = serviceCards.filter((item) => item.slug !== service.slug).slice(0, 3);
+  const primaryActionRoute =
+    service.slug === 'pharmacy-refill-prescription'
+      ? '/refill-prescription'
+      : service.slug === 'pharmacy-transfer-prescription'
+        ? '/transfer-prescription'
+        : '/contact-us';
+  const primaryActionLabel =
+    service.slug === 'pharmacy-refill-prescription'
+      ? 'Start refill request'
+      : service.slug === 'pharmacy-transfer-prescription'
+        ? 'Start transfer request'
+        : 'Ask about this service';
   const supportThemes = [
     'bg-[#f6efe5] border-[rgba(15,118,110,0.08)]',
     'bg-[#e9f4f2] border-[rgba(15,118,110,0.08)]',
@@ -2621,8 +2716,8 @@ function ServiceDetailPage({
               </div>
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <button type="button" onClick={() => onNavigate('/contact-us')} className="btn-primary">
-                  Ask about this service
+                <button type="button" onClick={() => onNavigate(primaryActionRoute)} className="btn-primary">
+                  {primaryActionLabel}
                 </button>
                 <button type="button" onClick={() => onNavigate('/services')} className="btn-secondary">
                   View all services
@@ -2978,6 +3073,255 @@ function ResourcesPage() {
   );
 }
 
+function RefillPrescriptionPage() {
+  const refillNumbers = ['01', '02', '03', '04'] as const;
+  const otcRows = [1, 2, 3, 4, 5] as const;
+
+  return (
+    <ContentPageShell
+      title=""
+      eyebrow=""
+      intro=""
+      hideShapes
+    >
+      <div className="space-y-8">
+        <div className="relative left-1/2 right-1/2 -mt-10 w-screen -translate-x-1/2 overflow-hidden border-y border-[rgba(15,118,110,0.1)] bg-[#0c1c25] shadow-[0_24px_60px_-36px_rgba(15,23,42,0.42)] sm:-mt-8 lg:-mt-10">
+          <div className="relative min-h-[20rem] sm:min-h-[23rem]">
+            <img
+              src="https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=1600&q=80"
+              alt="Medicine in a light-protected bottle"
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,25,24,0.12),rgba(7,25,24,0.72))]" />
+            <div className="absolute inset-x-0 bottom-0 p-7 text-center sm:p-9">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-white/72">Prescription support</p>
+              <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">
+                Refill Prescription
+              </h1>
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/86 sm:text-base">
+                Need a refill? Send us the details below and our team will prepare your medication for pickup or local delivery.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-auto w-full max-w-5xl rounded-[1.9rem] border border-[rgba(15,118,110,0.1)] bg-white p-7 shadow-[0_22px_48px_rgba(15,118,110,0.08)] sm:p-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="inline-flex rounded-full bg-[rgba(244,180,0,0.18)] px-4 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[var(--charcoal)]">
+                Refill request
+              </div>
+              <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-[var(--charcoal)] sm:text-4xl">
+                Refill your prescription
+              </h2>
+            </div>
+            <p className="text-sm font-medium text-[var(--slate)]">* Required information</p>
+          </div>
+
+          <form className="mt-8 space-y-8">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--teal)]">Who is this prescription for?</p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <FormInput label="Last Name" placeholder="Enter last name here" required />
+                <FormInput label="First Name" placeholder="Enter first name here" required />
+              </div>
+              <div className="mt-4 max-w-xl">
+                <FormInput label="Phone Number" placeholder="Enter phone number here" required />
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--teal)]">RX refill numbers</p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                {refillNumbers.map((number, index) => (
+                  <div key={number} className="rounded-[1.4rem] border border-[rgba(15,118,110,0.1)] bg-[rgba(15,118,110,0.02)] p-3">
+                    <div className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--teal)] text-xs font-semibold tracking-[0.18em] text-white">
+                      {number}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Enter RX refill number here"
+                      className="w-full rounded-[16px] border border-[rgba(15,118,110,0.12)] bg-white px-4 py-3 text-sm text-[var(--charcoal)] outline-none transition-colors placeholder:text-[var(--slate)]/70 focus:border-[var(--teal)]"
+                      aria-label={`RX refill number ${index + 1}`}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--teal)]">Add over-the-counter items</p>
+                  <p className="mt-2 text-sm leading-6 text-[var(--slate)]">Optional: include a few additional items you want prepared with the refill.</p>
+                </div>
+              </div>
+              <div className="mt-4 overflow-hidden rounded-[1.6rem] border border-[rgba(15,118,110,0.1)]">
+                <div className="hidden grid-cols-[1.4fr_0.8fr] gap-4 bg-[rgba(15,118,110,0.06)] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--teal)] sm:grid">
+                  <p>Name</p>
+                  <p>Qty</p>
+                </div>
+                <div className="divide-y divide-[rgba(15,118,110,0.08)] bg-white">
+                  {otcRows.map((row) => (
+                    <div key={row} className="grid gap-4 px-4 py-4 sm:grid-cols-[1.4fr_0.8fr] sm:px-5">
+                      <FormInput label={`Item ${row} Name`} placeholder="Enter name here" />
+                      <FormInput label={`Item ${row} Qty`} placeholder="Enter quantity here" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div>
+                <FormLabel label="Pickup or delivery" required />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {['Pickup', 'Delivery'].map((option) => (
+                    <label
+                      key={option}
+                      className="flex items-center gap-3 rounded-[18px] border border-[rgba(15,118,110,0.12)] bg-[rgba(15,118,110,0.02)] px-4 py-3 text-sm text-[var(--charcoal)]"
+                    >
+                      <input type="radio" name="pickup-or-delivery" className="accent-[var(--teal)]" />
+                      <span>{option}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="max-w-xl">
+                <FormSelect
+                  label="Notify me when ready"
+                  options={['No, thanks', 'Yes, via phone']}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <button type="button" className="btn-primary">
+                Submit refill request
+              </button>
+              <a
+                href={`tel:${phoneNumber.replace(/-/g, '')}`}
+                className="inline-flex items-center justify-center rounded-full border border-[rgba(15,118,110,0.18)] px-6 py-3.5 text-sm font-semibold text-[var(--teal)] transition hover:-translate-y-0.5 hover:border-[var(--teal)]"
+              >
+                Call {phoneNumber}
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </ContentPageShell>
+  );
+}
+
+function TransferPrescriptionPage() {
+  const transferRows = [1, 2, 3, 4, 5] as const;
+
+  return (
+    <ContentPageShell
+      title=""
+      eyebrow=""
+      intro=""
+      hideShapes
+    >
+      <div className="space-y-8">
+        <div className="relative left-1/2 right-1/2 -mt-10 w-screen -translate-x-1/2 overflow-hidden border-y border-[rgba(15,118,110,0.1)] bg-[#0c1c25] shadow-[0_24px_60px_-36px_rgba(15,23,42,0.42)] sm:-mt-8 lg:-mt-10">
+          <div className="relative min-h-[20rem] sm:min-h-[23rem]">
+            <img
+              src="https://images.unsplash.com/photo-1585435557343-3b092031a831?auto=format&fit=crop&w=1600&q=80"
+              alt="Pharmacy team helping a patient transfer prescriptions"
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,25,24,0.12),rgba(7,25,24,0.72))]" />
+            <div className="absolute inset-x-0 bottom-0 p-7 text-center sm:p-9">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-white/72">Prescription transfer</p>
+              <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">
+                Transfer Prescription
+              </h1>
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/86 sm:text-base">
+                Ready to switch pharmacies? Share the details below and we can start the transfer process for you.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-auto w-full max-w-5xl rounded-[1.9rem] border border-[rgba(15,118,110,0.1)] bg-white p-7 shadow-[0_22px_48px_rgba(15,118,110,0.08)] sm:p-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="inline-flex rounded-full bg-[rgba(244,180,0,0.18)] px-4 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[var(--charcoal)]">
+                Transfer request
+              </div>
+              <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-[var(--charcoal)] sm:text-4xl">
+                Start a prescription transfer
+              </h2>
+            </div>
+            <p className="text-sm font-medium text-[var(--slate)]">* Required information</p>
+          </div>
+
+          <form className="mt-8 space-y-8">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormInput label="First Name" placeholder="Enter first name here" required />
+              <FormInput label="Last Name" placeholder="Enter last name here" required />
+              <FormInput label="Date of Birth" placeholder="Enter date of birth here" type="date" required />
+              <FormInput label="Phone Number" placeholder="Enter phone number here" required />
+              <div className="sm:col-span-2 sm:max-w-3xl">
+                <FormInput label="Address" placeholder="Enter address here" required />
+              </div>
+              <FormInput label="City" placeholder="Enter city here" required />
+              <FormSelect label="State" required options={usStates} />
+              <FormInput label="Zip / Postal Code" placeholder="Enter zip or postal code here" required />
+              <FormInput label="Pharmacy Name" placeholder="Enter pharmacy name here" required />
+              <FormInput label="Pharmacy Phone" placeholder="Enter pharmacy phone here" required />
+            </div>
+
+            <div className="rounded-[1.7rem] border border-[rgba(15,118,110,0.1)] bg-[rgba(15,118,110,0.02)] p-5">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--teal)]">Prescription to be transferred</p>
+              <div className="mt-4 flex items-start gap-3 rounded-[1rem] bg-white px-4 py-4 text-sm leading-7 text-[var(--charcoal)] shadow-[0_12px_26px_rgba(15,118,110,0.06)]">
+                <input type="checkbox" className="mt-1 accent-[var(--teal)]" />
+                <p>Transfer all my prescriptions</p>
+              </div>
+              <p className="mt-4 text-sm leading-6 text-[var(--slate)]">
+                If you only want certain prescriptions moved, list them below.
+              </p>
+            </div>
+
+            <div className="overflow-hidden rounded-[1.6rem] border border-[rgba(15,118,110,0.1)]">
+              <div className="hidden grid-cols-[1fr_1fr] gap-4 bg-[rgba(15,118,110,0.06)] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--teal)] sm:grid">
+                <p>Medication name</p>
+                <p>Prescription number from current pharmacy</p>
+              </div>
+              <div className="divide-y divide-[rgba(15,118,110,0.08)] bg-white">
+                {transferRows.map((row) => (
+                  <div key={row} className="grid gap-4 px-4 py-4 sm:grid-cols-2 sm:px-5">
+                    <FormInput label={`Rx${row} Med Name`} placeholder="Enter medication name here" />
+                    <FormInput label={`Rx${row} Number`} placeholder="Enter prescription number here" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <button type="button" className="btn-primary">
+                Submit transfer request
+              </button>
+              <a
+                href={`tel:${phoneNumber.replace(/-/g, '')}`}
+                className="inline-flex items-center justify-center rounded-full border border-[rgba(15,118,110,0.18)] px-6 py-3.5 text-sm font-semibold text-[var(--teal)] transition hover:-translate-y-0.5 hover:border-[var(--teal)]"
+              >
+                Call {phoneNumber}
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </ContentPageShell>
+  );
+}
+
 function ContactPage() {
   return (
     <ContentPageShell
@@ -3174,14 +3518,18 @@ function ContentPageShell({
         </>
       )}
       <div className="page-shell relative z-10">
-        <div className="max-w-[52rem] space-y-4">
-          <SectionEyebrow>{eyebrow}</SectionEyebrow>
-          <h1 className={`font-heading text-[clamp(2.15rem,4vw,3.4rem)] font-semibold leading-[1] tracking-[-0.04em] text-[var(--charcoal)] ${titleClassName}`}>
-            {title}
-          </h1>
-          <p className="text-lg leading-8 text-[var(--slate)]">{intro}</p>
-        </div>
-        <div className="mt-6">{children}</div>
+        {eyebrow || title || intro ? (
+          <div className="max-w-[52rem] space-y-4">
+            {eyebrow ? <SectionEyebrow>{eyebrow}</SectionEyebrow> : null}
+            {title ? (
+              <h1 className={`font-heading text-[clamp(2.15rem,4vw,3.4rem)] font-semibold leading-[1] tracking-[-0.04em] text-[var(--charcoal)] ${titleClassName}`}>
+                {title}
+              </h1>
+            ) : null}
+            {intro ? <p className="text-lg leading-8 text-[var(--slate)]">{intro}</p> : null}
+          </div>
+        ) : null}
+        <div className={eyebrow || title || intro ? 'mt-6' : ''}>{children}</div>
       </div>
     </section>
   );
@@ -3189,8 +3537,70 @@ function ContentPageShell({
 
 function SectionEyebrow({ children }: { children: string }) {
   return (
-    <div className="inline-flex rounded-full bg-[rgba(15,118,110,0.08)] px-4 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[var(--teal)]">
+    <div className="inline-flex max-w-full items-center justify-center rounded-full bg-[rgba(15,118,110,0.08)] px-3 py-2 text-center text-[0.64rem] font-semibold uppercase leading-[1.35] tracking-[0.16em] text-[var(--teal)] sm:px-4 sm:text-[0.72rem] sm:tracking-[0.24em]">
       {children}
+    </div>
+  );
+}
+
+function FormLabel({
+  label,
+  required = false,
+}: {
+  label: string;
+  required?: boolean;
+}) {
+  return (
+    <label className="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-[var(--teal)]">
+      {label}
+      {required ? <span className="ml-1 text-[#d9822b]">*</span> : null}
+    </label>
+  );
+}
+
+function FormInput({
+  label,
+  placeholder,
+  type = 'text',
+  required = false,
+}: {
+  label: string;
+  placeholder: string;
+  type?: string;
+  required?: boolean;
+}) {
+  return (
+    <div>
+      <FormLabel label={label} required={required} />
+      <input
+        type={type}
+        placeholder={placeholder}
+        className="w-full rounded-[18px] border border-[rgba(15,118,110,0.14)] bg-[rgba(15,118,110,0.02)] px-4 py-3 text-sm text-[var(--charcoal)] outline-none transition-colors placeholder:text-[var(--slate)]/70 focus:border-[var(--teal)]"
+      />
+    </div>
+  );
+}
+
+function FormSelect({
+  label,
+  required = false,
+  options,
+}: {
+  label: string;
+  required?: boolean;
+  options: readonly string[];
+}) {
+  return (
+    <div>
+      <FormLabel label={label} required={required} />
+      <select className="w-full rounded-[18px] border border-[rgba(15,118,110,0.14)] bg-[rgba(15,118,110,0.02)] px-4 py-3 text-sm text-[var(--charcoal)] outline-none transition-colors focus:border-[var(--teal)]">
+        <option value="">Please select</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
