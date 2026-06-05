@@ -2426,52 +2426,33 @@ function AboutPage({ onNavigate }: { onNavigate: (path: RoutePath) => void }) {
         ))}
       </div>
 
-      <div className="relative left-1/2 right-1/2 w-screen -translate-x-1/2 bg-[#f4f1ea] px-7 py-12 sm:px-10 sm:py-14 lg:px-12 lg:py-18">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-start lg:gap-18">
-          <div className="lg:sticky lg:top-24">
+      <div className="relative left-1/2 right-1/2 w-screen -translate-x-1/2 bg-[#f4ede3] px-7 py-14 sm:px-10 sm:py-16 lg:px-12 lg:py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="max-w-2xl">
             <p className="font-heading text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--teal)]">How we do</p>
-            <h3 className="mt-5 font-ui text-[41px] font-semibold leading-[1.02] tracking-[-0.04em] text-[#d9822b] sm:text-[48px]">
+            <h3 className="mt-5 font-ui text-[40px] font-semibold leading-[1.02] tracking-[-0.04em] text-[var(--charcoal)] sm:text-[48px]">
               Marigold is...
             </h3>
-            <p className="mt-5 max-w-md text-[16px] leading-8 text-[var(--slate)]">
+            <p className="mt-5 max-w-xl text-[16px] leading-8 text-[var(--slate)]">
               Simple pharmacy care shaped by warmth, clarity, and a steadier day-to-day experience.
             </p>
           </div>
 
-          <div className="border-t border-[rgba(31,41,55,0.12)]">
+          <div className="mt-10 grid overflow-hidden border-t border-[rgba(15,118,110,0.16)] md:grid-cols-2 md:border-l">
             {values.map((value, index) => (
-              <div
+              <article
                 key={value.title}
-                className="grid gap-4 border-b border-[rgba(31,41,55,0.12)] py-6 sm:py-7 md:grid-cols-[11rem_1fr] md:gap-8"
+                className={`flex min-h-[14rem] flex-col justify-start border-b border-[rgba(15,118,110,0.16)] py-8 md:px-8 md:py-10 ${
+                  index % 2 === 0 ? 'md:border-r' : ''
+                }`}
               >
-                <div className="flex items-center gap-4">
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      index === 0
-                        ? 'bg-[#d9822b]'
-                        : index === 1
-                          ? 'bg-[var(--teal)]'
-                          : index === 2
-                            ? 'bg-[var(--green)]'
-                            : 'bg-[var(--charcoal)]'
-                    }`}
-                  />
-                  <p
-                    className={`font-ui text-[28px] font-semibold leading-none tracking-[-0.04em] sm:text-[31px] ${
-                      index === 0
-                        ? 'text-[#d9822b]'
-                        : index === 1
-                          ? 'text-[var(--teal)]'
-                          : index === 2
-                            ? 'text-[var(--green)]'
-                            : 'text-[var(--charcoal)]'
-                    }`}
-                  >
-                    {value.title}
-                  </p>
-                </div>
-                <p className="max-w-[36rem] text-[15px] leading-7 text-[var(--slate)] sm:text-[16px] sm:leading-8">{value.description}</p>
-              </div>
+                <h4 className="font-ui text-[42px] font-semibold leading-none tracking-[-0.05em] text-[var(--teal)] sm:text-[52px]">
+                  {value.title}
+                </h4>
+                <p className="mt-7 max-w-[27rem] text-[15px] leading-8 text-[var(--charcoal)] sm:text-[16px]">
+                  {value.description}
+                </p>
+              </article>
             ))}
           </div>
         </div>
