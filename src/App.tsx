@@ -72,8 +72,7 @@ type SupplyItem = {
   image: string;
 };
 
-const homeHeroImage =
-  '/assets/hero-doctor-pharmacy.png';
+const homeHeroImage = '/assets/hero-doctor-pharmacy.svg';
 
 const heroQuickActions = [
   {
@@ -1960,9 +1959,15 @@ function HomePage({
     ? 'font-ui text-[2.25rem] font-bold leading-[1] tracking-normal text-white sm:text-[2.85rem] lg:text-[3.45rem] xl:text-[3.85rem]'
     : 'font-ui text-[clamp(2.45rem,4.3vw,4.45rem)] font-bold leading-[0.98] tracking-[-0.035em] text-white sm:text-[clamp(2.85rem,4.7vw,4.45rem)]';
   const heroLineClass = isSpanish ? 'block max-w-[11ch] text-balance' : 'block whitespace-nowrap';
-  const quickActionTopClass = isSpanish ? 'text-[14px] sm:text-[15px] lg:text-[16px]' : 'text-[15px] sm:text-[16px] lg:text-[17px]';
+  const quickActionTopClass = isSpanish ? 'text-[13px] sm:text-[14px] lg:text-[15px]' : 'text-[15px] sm:text-[16px] lg:text-[17px]';
+  const quickActionTopTextClass = isSpanish
+    ? `${quickActionTopClass} max-w-[11ch] text-balance font-semibold leading-tight`
+    : `${quickActionTopClass} whitespace-nowrap font-semibold leading-tight`;
+  const quickActionBottomTextClass = isSpanish
+    ? 'mt-0.5 max-w-[12ch] text-balance text-[13px] font-semibold leading-tight sm:text-[14px]'
+    : 'mt-0.5 whitespace-nowrap text-[14px] font-semibold leading-tight sm:text-[15px]';
   const heroImageClass = isSpanish
-    ? 'absolute inset-0 h-full w-full object-cover object-[84%_72%] sm:object-[78%_74%] lg:object-[72%_76%]'
+    ? 'absolute inset-0 h-full w-full object-cover object-[82%_78%] sm:object-[76%_80%] lg:object-[70%_82%] xl:object-[68%_82%]'
     : 'absolute inset-0 h-full w-full object-cover object-[84%_72%] sm:object-[78%_74%] lg:object-[72%_76%]';
   const featuredResourceThemes = [
     {
@@ -2032,7 +2037,7 @@ function HomePage({
                 'Personalized pharmacy care, refills, delivery, immunizations, and wellness support for Kissimmee.',
               )}
             </p>
-            <div className="mt-10 grid w-full max-w-[460px] grid-cols-2 justify-start gap-3 sm:mt-12 sm:gap-4">
+            <div className={`mt-10 grid w-full grid-cols-2 justify-start gap-3 sm:mt-12 sm:gap-4 ${isSpanish ? 'max-w-[520px] lg:max-w-[540px]' : 'max-w-[460px]'}`}>
               {heroQuickActions.map((item) => {
                 const Icon = item.icon;
 
@@ -2041,15 +2046,15 @@ function HomePage({
                     key={item.bottom}
                     type="button"
                     onClick={() => onNavigate(item.route)}
-                    className={`group relative flex min-h-[96px] items-center gap-3 overflow-hidden rounded-[1rem] border px-4 py-4 text-left backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(15,23,42,0.18)] ${item.cardClass}`}
+                    className={`group relative flex items-center gap-3 overflow-hidden rounded-[1rem] border px-4 py-4 text-left backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(15,23,42,0.18)] ${isSpanish ? 'min-h-[108px] sm:min-h-[112px]' : 'min-h-[96px]'} ${item.cardClass}`}
                   >
                     <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-current opacity-20" />
                     <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${item.iconClass}`}>
                       <Icon size={19} className="transition-transform duration-300 group-hover:scale-110" />
                     </div>
                     <div className="min-w-0">
-                      <div className={`${quickActionTopClass} whitespace-nowrap font-semibold leading-tight`}>{t(item.top)}</div>
-                      <div className={`mt-0.5 whitespace-nowrap text-[14px] font-semibold leading-tight sm:text-[15px] ${item.bottomClass}`}>{t(item.bottom)}</div>
+                      <div className={quickActionTopTextClass}>{t(item.top)}</div>
+                      <div className={`${quickActionBottomTextClass} ${item.bottomClass}`}>{t(item.bottom)}</div>
                     </div>
                   </button>
                 );
