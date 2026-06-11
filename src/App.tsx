@@ -6,6 +6,7 @@ import {
   AlignLeft,
   ArrowRight,
   ArrowUp,
+  ArrowLeftRight,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
@@ -13,6 +14,7 @@ import {
   Contrast,
   EyeOff,
   ExternalLink,
+  Languages,
   MousePointer2,
   Mail,
   MapPin,
@@ -24,9 +26,13 @@ import {
   ShieldCheck,
   Shrink,
   Sparkles,
+  Truck,
   Type,
   X,
 } from 'lucide-react';
+import { getStoredLanguage, useSiteTranslation } from './i18n';
+import { translateTextValue } from './i18n';
+import type { Language } from './i18n';
 
 type BaseRoutePath =
   | '/'
@@ -36,6 +42,8 @@ type BaseRoutePath =
   | '/resources'
   | '/insurance-accepted'
   | '/contact-us'
+  | '/auto-rx-refills'
+  | '/free-prescription-delivery'
   | '/refill-prescription'
   | '/transfer-prescription';
 
@@ -63,6 +71,91 @@ type SupplyItem = {
   description: string;
   image: string;
 };
+
+const homeHeroImage =
+  '/assets/hero-doctor-pharmacy.png';
+
+const heroQuickActions = [
+  {
+    top: 'Subscribe to',
+    bottom: 'Auto Rx Refills',
+    icon: Clock3,
+    route: '/auto-rx-refills',
+    cardClass: 'border-white/70 bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(236,250,247,0.92))] text-[var(--charcoal)] shadow-[0_18px_42px_rgba(15,72,68,0.18)]',
+    iconClass: 'bg-[#0f766e] text-white shadow-[0_10px_22px_rgba(15,118,110,0.22)]',
+    bottomClass: 'text-[var(--teal)]',
+  },
+  {
+    top: 'Prescription',
+    bottom: 'Refill',
+    icon: RotateCcw,
+    route: '/refill-prescription',
+    cardClass: 'border-white/70 bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(255,248,225,0.94))] text-[var(--charcoal)] shadow-[0_18px_42px_rgba(160,104,0,0.16)]',
+    iconClass: 'bg-[var(--gold)] text-[var(--charcoal)] shadow-[0_10px_22px_rgba(244,180,0,0.24)]',
+    bottomClass: 'text-[#9a6500]',
+  },
+  {
+    top: 'Free Prescription',
+    bottom: 'Delivery',
+    icon: Truck,
+    route: '/free-prescription-delivery',
+    cardClass: 'border-white/70 bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(255,238,232,0.94))] text-[var(--charcoal)] shadow-[0_18px_42px_rgba(189,88,54,0.15)]',
+    iconClass: 'bg-[#ef8b68] text-[#2b1711] shadow-[0_10px_22px_rgba(239,139,104,0.24)]',
+    bottomClass: 'text-[#b75535]',
+  },
+  {
+    top: 'Transfer',
+    bottom: 'Prescription',
+    icon: ArrowLeftRight,
+    route: '/transfer-prescription',
+    cardClass: 'border-white/70 bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(231,241,250,0.94))] text-[var(--charcoal)] shadow-[0_18px_42px_rgba(18,63,103,0.16)]',
+    iconClass: 'bg-[#123f67] text-white shadow-[0_10px_22px_rgba(18,63,103,0.24)]',
+    bottomClass: 'text-[#123f67]',
+  },
+] as const;
+
+const homeServiceHighlights = [
+  {
+    top: 'Transfer',
+    bottom: 'Prescription',
+    route: '/transfer-prescription',
+    image: 'https://images.unsplash.com/photo-1585435557343-3b092031a831?auto=format&fit=crop&w=1400&q=80',
+    category: 'Prescription Support',
+    description: 'A simpler transfer process for patients moving prescriptions from another pharmacy.',
+  },
+  {
+    top: 'Prescription',
+    bottom: 'Refill',
+    route: '/refill-prescription',
+    image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1400&q=80',
+    category: 'Prescription Support',
+    description: 'Fast refill support for existing prescriptions before medication runs low.',
+  },
+  {
+    top: 'Compounding',
+    bottom: '(Non-Sterile)',
+    route: '/services/non-sterile-compounding',
+    image: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1400&q=80',
+    category: 'Custom Medications',
+    description: 'Patient-specific non-sterile compounding support when standard options are not the right fit.',
+  },
+  {
+    top: 'Seasonal',
+    bottom: 'Vaccinations',
+    route: '/services/seasonal-vaccinations',
+    image: 'https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?auto=format&fit=crop&w=1400&q=80',
+    category: 'Preventive Care',
+    description: 'Convenient seasonal and routine immunization support based on eligibility and availability.',
+  },
+  {
+    top: 'Price',
+    bottom: 'Matching',
+    route: '/insurance-accepted',
+    image: 'https://images.unsplash.com/photo-1551190822-a9333d879b1f?auto=format&fit=crop&w=1600&q=80',
+    category: 'Affordability',
+    description: 'Clear insurance and pricing support to help you understand your options.',
+  },
+] as const;
 
 const navItems: NavItem[] = [
   { path: '/', label: 'Home', subtitle: 'Welcome Page' },
@@ -127,6 +220,234 @@ const usStates = [
 ] as const;
 
 const serviceCards: ServiceCard[] = [
+  {
+    slug: '4-prescriptions',
+    category: 'Affordability',
+    intro: 'Budget-friendly prescription support for eligible commonly prescribed medications.',
+    title: '$4 Prescriptions',
+    description: 'Clearer pricing conversations and low-cost prescription support for eligible medications.',
+    image: 'https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'Cost-conscious options for eligible low-cost medications',
+      'Clear pickup and refill expectations',
+      'Friendly guidance when insurance does not fit the need',
+    ],
+    supportNote: 'Best for patients who want simpler pricing conversations and help understanding lower-cost options.',
+  },
+  {
+    slug: 'medication-synchronization',
+    category: 'Adherence',
+    intro: 'Line up ongoing prescriptions into one easier monthly refill rhythm.',
+    title: 'Medication Synchronization',
+    description: 'Medication alignment, refill planning, and organized pharmacist support for long-term routines.',
+    image: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'One planned refill date for eligible ongoing prescriptions',
+      'Ongoing communication when timing changes are needed',
+      'Useful for caregivers, busy households, and long-term routines',
+    ],
+    supportNote: 'A good fit for patients who want their maintenance refills to feel less scattered.',
+  },
+  {
+    slug: 'prescription-refill',
+    category: 'Prescription Support',
+    intro: 'Fast refill support for existing prescriptions before medication runs low.',
+    title: 'Prescription Refill',
+    description: 'Refill coordination, pharmacist communication, and steady support for recurring medication needs.',
+    image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'Refill request intake and readiness support',
+      'Help resolving timing questions before medications run out',
+      'A smoother process for repeat monthly prescriptions',
+    ],
+    supportNote: 'Designed for patients who want quick refill follow-through with neighborhood pharmacy care.',
+  },
+  {
+    slug: 'non-sterile-compounding',
+    category: 'Custom Medications',
+    intro: 'Patient-specific non-sterile compounding support when standard options are not the right fit.',
+    title: 'Non-Sterile Compounding',
+    description: 'Customized medication preparation support for selected strengths, dosage forms, or ingredients.',
+    image: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'Support when a patient needs a customized strength or dosage form',
+      'Helpful in some cases involving allergies, swallowing difficulty, or pediatric needs',
+      'Pharmacy coordination around patient-specific prescriptions',
+    ],
+    supportNote: 'Useful when a prescriber determines a customized non-sterile preparation is appropriate.',
+  },
+  {
+    slug: 'diabetes-specialty-care-center',
+    category: 'Chronic Care',
+    intro: 'Practical pharmacy support for diabetes medication routines and supply coordination.',
+    title: 'Diabetes Specialty Care Center',
+    description: 'Support for medication routines, diabetic supplies, and clearer day-to-day coordination.',
+    image: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'Coordination around diabetic supplies and medication pickups',
+      'Organization help for recurring care routines',
+      'Useful for patients managing multiple diabetes-related items each month',
+    ],
+    supportNote: 'Built around consistency, easier pickups, and better organization for ongoing care.',
+  },
+  {
+    slug: 'durable-medical-equipment',
+    category: 'Medical Supplies',
+    intro: 'Selected home-use health equipment support for safer, more manageable routines.',
+    title: 'Durable Medical Equipment',
+    description: 'Home-health equipment support for comfort, mobility, and safer day-to-day care at home.',
+    image: 'https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'Common home-care and mobility-related equipment support',
+      'Help understanding product categories and next steps',
+      'Useful for caregivers planning safer routines at home',
+    ],
+    supportNote: 'A good fit for families combining pharmacy support with practical home-care essentials.',
+  },
+  {
+    slug: 'free-prescription-delivery',
+    category: 'Convenience',
+    intro: 'Free local prescription delivery for patients, caregivers, and busy households.',
+    title: 'Free Prescription Delivery',
+    description: 'Local delivery coordination for prescriptions and essentials to reduce missed pickups.',
+    image: 'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'Helpful for patients with transportation, schedule, or caregiving challenges',
+      'Supports continuity when pickups are difficult',
+      'A practical extension of neighborhood pharmacy care',
+    ],
+    supportNote: 'Designed to keep medication access easier when a pharmacy trip is hard to fit in.',
+  },
+  {
+    slug: 'free-consultations',
+    category: 'Pharmacist Access',
+    intro: 'Easy access to the pharmacy team for general medication and service questions.',
+    title: 'Free Consultations',
+    description: 'One-on-one pharmacist access for questions about services, routines, and next steps.',
+    image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'General pharmacy guidance and patient support conversations',
+      'A welcoming place to ask routine medication questions',
+      'Useful before starting a transfer, packaging, or sync plan',
+    ],
+    supportNote: 'Best for patients who want answers from a real local pharmacy team.',
+  },
+  {
+    slug: 'generic-and-brand-name-drugs',
+    category: 'Prescription Access',
+    intro: 'Prescription support across common generic and brand-name medication needs.',
+    title: 'Generic and Brand Name Drugs',
+    description: 'Medication access support across common generic and brand-name prescriptions.',
+    image: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'Support comparing brand and generic availability',
+      'Clearer conversations around routine prescription options',
+      'Helpful for patients balancing cost, familiarity, and continuity',
+    ],
+    supportNote: 'Focused on access, clarity, and making prescription choices easier to understand.',
+  },
+  {
+    slug: 'medication-therapy-management',
+    category: 'Clinical Support',
+    intro: 'Medication review support for patients taking multiple medicines.',
+    title: 'Medication Therapy Management',
+    description: 'Personal medication reviews that help patients understand their medication routine.',
+    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'Medication list review and organization support',
+      'Helps surface timing, duplication, or adherence questions',
+      'Especially useful for patients on multiple long-term medications',
+    ],
+    supportNote: 'Often works well alongside synchronization for more organized routines.',
+  },
+  {
+    slug: 'next-day-special-order',
+    category: 'Access',
+    intro: 'Special-order coordination when selected medications or products are not routinely stocked.',
+    title: 'Next-Day Special Order',
+    description: 'Fast special-order support for selected medications and pharmacy products.',
+    image: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'Useful when a product is not part of standard daily stock',
+      'Clear communication around timing and next steps',
+      'Helps patients avoid calling multiple locations to check availability',
+    ],
+    supportNote: 'Built around local follow-through and keeping patients informed while orders are in process.',
+  },
+  {
+    slug: 'otc-and-herbal-supplements',
+    category: 'Everyday Essentials',
+    intro: 'Over-the-counter and herbal supplement guidance for everyday wellness needs.',
+    title: 'OTC and Herbal Supplements',
+    description: 'Practical product guidance for common OTC items and selected herbal supplements.',
+    image: 'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'Convenient access to common self-care and household health items',
+      'Medication-aware questions to bring to the counter',
+      'Supports everyday wellness without overcomplicating the visit',
+    ],
+    supportNote: 'Focused on practical guidance and safer product conversations at the pharmacy counter.',
+  },
+  {
+    slug: 'hsa-fsa-accepted',
+    category: 'Affordability',
+    intro: 'HSA and FSA payment support for eligible pharmacy purchases.',
+    title: 'HSA / FSA Accepted',
+    description: 'Flexible spending support for eligible prescription, OTC, and health-related purchases.',
+    image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'HSA and FSA support for eligible purchases',
+      'Clearer payment conversations before checkout',
+      'Helpful for families managing recurring pharmacy costs',
+    ],
+    supportNote: 'Useful for patients who want to make eligible health dollars easier to use.',
+  },
+  {
+    slug: 'seasonal-vaccinations',
+    category: 'Preventive Care',
+    intro: 'Convenient seasonal and routine immunization support based on eligibility and availability.',
+    title: 'Seasonal Vaccinations',
+    description: 'Vaccination planning, family scheduling support, and preventive care conversations.',
+    image: 'https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'Seasonal vaccine access when offered onsite',
+      'Preventive care reminders and scheduling support',
+      'Helpful for families, caregivers, and adults staying current on recommendations',
+    ],
+    supportNote: 'Built for patients who want local, convenient preventive care support.',
+  },
+  {
+    slug: 'transfer-prescriptions',
+    category: 'Prescription Support',
+    intro: 'Prescription transfer support for patients moving medications into local Marigold care.',
+    title: 'Transfer Prescriptions',
+    description: 'A simpler transfer process for patients moving prescriptions from another pharmacy.',
+    image: 'https://images.unsplash.com/photo-1585435557343-3b092031a831?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'Pharmacy-to-pharmacy transfer coordination',
+      'Helpful for patients switching to local service or delivery support',
+      'A smooth starting point for ongoing Marigold care',
+    ],
+    supportNote: 'Ideal for new patients who want a more responsive neighborhood pharmacy experience.',
+  },
+  {
+    slug: 'special-order-pet-meds',
+    category: 'Specialty Support',
+    intro: 'Special-order medication coordination for household pet prescription needs.',
+    title: 'Special Order Pet Meds',
+    description: 'Pet medication support with practical coordination for veterinary prescriptions.',
+    image: 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&w=1400&q=80',
+    details: [
+      'Support for selected veterinary prescription needs',
+      'Helpful for pet owners balancing both family and pet medications',
+      'Local communication when timing and pickup details matter',
+    ],
+    supportNote: 'A useful extension of neighborhood pharmacy care for households that include pets.',
+  },
+];
+
+/*
+const legacyServiceCards: ServiceCard[] = [
   {
     slug: '4-prescription-plan',
     category: 'Affordability',
@@ -471,6 +792,8 @@ const serviceCards: ServiceCard[] = [
   },
 ];
 
+*/
+
 const supplyItems: SupplyItem[] = [
   {
     title: 'Bathroom Safety',
@@ -523,6 +846,7 @@ const resourceLinks = [
     description: 'Federal medication guidance, safety information, labeling help, and consumer drug education.',
     href: 'https://www.fda.gov',
     cta: 'Read guide',
+    image: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1400&q=80',
   },
   {
     category: 'Guide',
@@ -530,6 +854,7 @@ const resourceLinks = [
     description: 'Patient-friendly safe-use tips for common medicines, OTC products, storage, and daily routines.',
     href: 'https://www.safemedication.com',
     cta: 'Visit resource',
+    image: 'https://images.unsplash.com/photo-1550572017-edd951aa8f72?auto=format&fit=crop&w=1400&q=80',
   },
   {
     category: 'Resource',
@@ -537,6 +862,7 @@ const resourceLinks = [
     description: 'Medication safety education and practical prevention resources for patients and caregivers.',
     href: 'https://www.ismp.org',
     cta: 'Learn more',
+    image: 'https://images.unsplash.com/photo-1580281657527-47f249e8f6d5?auto=format&fit=crop&w=1400&q=80',
   },
 ];
 
@@ -574,9 +900,10 @@ const serviceMenuGroups: ServiceMenuGroup[] = [
     title: 'Prescription access',
     description: 'Refills, transfers, cost clarity, and medication access made easier.',
     items: [
-      { slug: '4-prescription-plan', note: 'Cost-conscious support for eligible low-cost medications.', glyph: 'billing' },
-      { slug: 'pharmacy-refill-prescription', note: 'Quick refill follow-through for recurring prescriptions.', glyph: 'pill' },
-      { slug: 'pharmacy-transfer-prescription', note: 'Move your prescriptions into local Marigold care.', glyph: 'delivery' },
+      { slug: '4-prescriptions', note: 'Cost-conscious support for eligible low-cost medications.', glyph: 'billing' },
+      { slug: 'prescription-refill', note: 'Quick refill follow-through for recurring prescriptions.', glyph: 'pill' },
+      { slug: 'transfer-prescriptions', note: 'Move your prescriptions into local Marigold care.', glyph: 'delivery' },
+      { slug: 'generic-and-brand-name-drugs', note: 'Generic and brand-name medication access.', glyph: 'pill' },
     ],
   },
   {
@@ -584,26 +911,29 @@ const serviceMenuGroups: ServiceMenuGroup[] = [
     description: 'Tools that keep long-term medication routines organized and easier to manage.',
     items: [
       { slug: 'medication-synchronization', note: 'Align maintenance refills into one monthly rhythm.', glyph: 'sync' },
+      { slug: 'non-sterile-compounding', note: 'Custom non-sterile medication support.', glyph: 'flask' },
       { slug: 'medication-therapy-management', note: 'Medication review support for patients taking multiple medicines.', glyph: 'clipboard' },
-      { slug: 'multi-dose-packaging', note: 'Time-of-day packaging that simplifies daily routines.', glyph: 'package' },
+      { slug: 'next-day-special-order', note: 'Fast special-order coordination.', glyph: 'package' },
     ],
   },
   {
-    title: 'Prevention & wellness',
-    description: 'Convenience, immunizations, screenings, and guidance for everyday wellness.',
+    title: 'Convenience and affordability',
+    description: 'Delivery, consultations, equipment, and payment support for everyday care.',
     items: [
-      { slug: 'seasonal-vaccinations', note: 'Seasonal and routine immunization support when available.', glyph: 'syringe' },
-      { slug: 'health-screenings', note: 'Screening touchpoints that encourage proactive care.', glyph: 'scan' },
-      { slug: 'pharmacy-free-delivery-services', note: 'Local delivery for prescriptions and everyday essentials.', glyph: 'delivery' },
-    ],
-  },
-  {
-    title: 'Home & specialty care',
-    description: 'Practical items and specialty support that help families manage care at home.',
-    items: [
+      { slug: 'free-prescription-delivery', note: 'Local delivery for prescriptions and everyday essentials.', glyph: 'delivery' },
+      { slug: 'free-consultations', note: 'Easy access to pharmacist guidance.', glyph: 'chat' },
+      { slug: 'hsa-fsa-accepted', note: 'Eligible HSA and FSA payment support.', glyph: 'billing' },
       { slug: 'durable-medical-equipment', note: 'Home-health equipment and mobility support.', glyph: 'shield' },
-      { slug: 'otc-drugs-and-1-dollar-dollar-wise-items', note: 'Over-the-counter essentials and budget-friendly items.', glyph: 'basket' },
-      { slug: 'price-matching-or-insurance-billing', note: 'Pricing clarity and insurance-billing support.', glyph: 'billing' },
+    ],
+  },
+  {
+    title: 'Wellness and specialty care',
+    description: 'Preventive, OTC, diabetes, and pet-medication support.',
+    items: [
+      { slug: 'diabetes-specialty-care-center', note: 'Diabetes supply and medication support.', glyph: 'heart' },
+      { slug: 'otc-and-herbal-supplements', note: 'OTC and herbal supplement guidance.', glyph: 'leaf' },
+      { slug: 'seasonal-vaccinations', note: 'Seasonal and routine immunization support when available.', glyph: 'syringe' },
+      { slug: 'special-order-pet-meds', note: 'Special-order support for pet medications.', glyph: 'paw' },
     ],
   },
 ];
@@ -615,7 +945,7 @@ const resourceHighlights = [
     description: 'Trusted federal guidance on prescription use, labels, and safe habits at home.',
     href: 'https://www.fda.gov/drugs',
     image:
-      'https://images.unsplash.com/photo-1580281657527-47f249e8fca0?auto=format&fit=crop&w=1600&q=80',
+      'https://images.unsplash.com/photo-1585435557343-3b092031a831?auto=format&fit=crop&w=1600&q=80',
     cta: 'Read guide',
   },
   {
@@ -651,7 +981,7 @@ const resourceHighlights = [
     description: 'Practical safety resources for patients and caregivers to help prevent mistakes.',
     href: 'https://www.ismp.org',
     image:
-      'https://images.unsplash.com/photo-1576765607924-3f7b8e0d90ad?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?auto=format&fit=crop&w=1200&q=80',
     cta: 'Learn more',
   },
 ];
@@ -770,6 +1100,14 @@ function getCurrentRoute(pathname: string): RoutePath {
     return '/refill-prescription';
   }
 
+  if (path === '/auto-rx-refills') {
+    return '/auto-rx-refills';
+  }
+
+  if (path === '/free-prescription-delivery') {
+    return '/free-prescription-delivery';
+  }
+
   if (path === '/transfer-prescription') {
     return '/transfer-prescription';
   }
@@ -797,11 +1135,13 @@ function getServiceMenuCard(slug: string) {
   return serviceCards.find((item) => item.slug === slug) ?? null;
 }
 
-function BrandLockup({ dark = false, compact = false }: { dark?: boolean; compact?: boolean }) {
+function BrandLockup({ dark = false, compact = false, language = 'en' }: { dark?: boolean; compact?: boolean; language?: Language }) {
   const prefersReducedMotion = useReducedMotion();
+  const t = (text: string) => translateTextValue(text, language);
 
   return (
     <motion.div
+      data-no-translate="true"
       className={`inline-flex items-center ${compact ? 'gap-1.5' : 'gap-3.5'} text-left will-change-transform`}
       initial={prefersReducedMotion ? false : { opacity: 0, y: -6, scale: 0.98 }}
       animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
@@ -826,7 +1166,7 @@ function BrandLockup({ dark = false, compact = false }: { dark?: boolean; compac
             dark ? 'text-white/72' : 'text-[var(--green)]'
           }`}
         >
-          Pharmacy
+          {t('Pharmacy')}
         </span>
       </span>
     </motion.div>
@@ -1144,123 +1484,9 @@ function ServiceMenuIcon({ glyph }: { glyph: ServiceMenuGlyphKey }) {
   }
 }
 
-function SmoothCursor({ disabled }: { disabled: boolean }) {
-  const prefersReducedMotion = useReducedMotion();
-  const cursorRef = useRef<HTMLDivElement | null>(null);
-  const trailRef = useRef<HTMLDivElement | null>(null);
-  const frameRef = useRef<number | null>(null);
-  const currentRef = useRef({ x: 0, y: 0 });
-  const trailCurrentRef = useRef({ x: 0, y: 0 });
-  const targetRef = useRef({ x: 0, y: 0 });
-  const [isActive, setIsActive] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    if (disabled || prefersReducedMotion) {
-      setIsActive(false);
-      setIsVisible(false);
-      document.body.classList.remove('smooth-cursor-active');
-      return;
-    }
-
-    const mediaQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
-    const updateCapability = () => {
-      const enabled = mediaQuery.matches;
-      setIsActive(enabled);
-      setIsVisible(false);
-      document.body.classList.toggle('smooth-cursor-active', enabled);
-    };
-
-    updateCapability();
-    mediaQuery.addEventListener('change', updateCapability);
-
-    return () => {
-      mediaQuery.removeEventListener('change', updateCapability);
-      document.body.classList.remove('smooth-cursor-active');
-    };
-  }, [disabled, prefersReducedMotion]);
-
-  useEffect(() => {
-    if (!isActive) {
-      if (frameRef.current !== null) {
-        window.cancelAnimationFrame(frameRef.current);
-        frameRef.current = null;
-      }
-      return;
-    }
-
-    const animate = () => {
-      currentRef.current.x += (targetRef.current.x - currentRef.current.x) * 0.22;
-      currentRef.current.y += (targetRef.current.y - currentRef.current.y) * 0.22;
-      trailCurrentRef.current.x += (targetRef.current.x - trailCurrentRef.current.x) * 0.14;
-      trailCurrentRef.current.y += (targetRef.current.y - trailCurrentRef.current.y) * 0.14;
-
-      if (cursorRef.current) {
-        cursorRef.current.style.transform = `translate3d(${currentRef.current.x}px, ${currentRef.current.y}px, 0)`;
-      }
-
-      if (trailRef.current) {
-        trailRef.current.style.transform = `translate3d(${trailCurrentRef.current.x}px, ${trailCurrentRef.current.y}px, 0)`;
-      }
-
-      frameRef.current = window.requestAnimationFrame(animate);
-    };
-
-    const handlePointerMove = (event: PointerEvent) => {
-      if (event.pointerType && event.pointerType !== 'mouse' && event.pointerType !== 'pen') {
-        return;
-      }
-
-      const nextPoint = { x: event.clientX, y: event.clientY };
-
-      if (!isVisible) {
-        currentRef.current = nextPoint;
-        trailCurrentRef.current = nextPoint;
-      }
-
-      targetRef.current = nextPoint;
-      setIsVisible(true);
-    };
-
-    const handlePointerLeave = () => {
-      setIsVisible(false);
-    };
-
-    frameRef.current = window.requestAnimationFrame(animate);
-    window.addEventListener('pointermove', handlePointerMove, { passive: true });
-    window.addEventListener('pointerleave', handlePointerLeave);
-    window.addEventListener('blur', handlePointerLeave);
-
-    return () => {
-      if (frameRef.current !== null) {
-        window.cancelAnimationFrame(frameRef.current);
-        frameRef.current = null;
-      }
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerleave', handlePointerLeave);
-      window.removeEventListener('blur', handlePointerLeave);
-    };
-  }, [isActive, isVisible]);
-
-  if (!isActive) {
-    return null;
-  }
-
-  return (
-    <div
-      aria-hidden="true"
-      className={`pointer-events-none fixed inset-0 z-[210] transition-opacity duration-300 ${
-        isVisible ? 'opacity-100' : 'opacity-0'
-      }`}
-    >
-      <div ref={trailRef} className="smooth-cursor-trail" />
-      <div ref={cursorRef} className="smooth-cursor-core" />
-    </div>
-  );
-}
-
 function App() {
   const [route, setRoute] = useState<RoutePath>(() => getCurrentRoute(window.location.pathname));
+  const [language, setLanguage] = useState<Language>(() => getStoredLanguage());
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false);
   const [isScrollVisible, setIsScrollVisible] = useState(false);
@@ -1268,6 +1494,8 @@ function App() {
   const [accessibilitySettings, setAccessibilitySettings] = useState<AccessibilitySettings>(defaultAccessibilitySettings);
   const [accessibilityWidgetSide, setAccessibilityWidgetSide] = useState<'left' | 'right'>('right');
   const [isAccessibilityWidgetHidden, setIsAccessibilityWidgetHidden] = useState(false);
+
+  useSiteTranslation(language);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -1337,53 +1565,59 @@ function App() {
 
   return (
     <main
-      className={`min-h-screen overflow-x-hidden bg-[var(--cream)] text-[var(--charcoal)] ${
-        accessibilitySettings.oversizedWidget ? 'accessibility-oversized-widget' : ''
-      } ${accessibilitySettings.biggerText ? 'accessibility-bigger-text' : ''} ${
-        accessibilitySettings.highContrast ? 'accessibility-high-contrast' : ''
-      } ${accessibilitySettings.highlightLinks ? 'accessibility-highlight-links' : ''} ${
-        accessibilitySettings.textSpacing ? 'accessibility-text-spacing' : ''
-      } ${accessibilitySettings.pauseAnimations ? 'accessibility-pause-motion' : ''} ${
-        accessibilitySettings.hideImages ? 'accessibility-hide-images' : ''
-      } ${accessibilitySettings.dyslexiaFriendly ? 'accessibility-dyslexia-friendly' : ''} ${
-        accessibilitySettings.bigCursor ? 'accessibility-big-cursor' : ''
-      } ${accessibilitySettings.tooltips ? 'accessibility-tooltips' : ''} ${
-        accessibilitySettings.lineHeight ? 'accessibility-line-height' : ''
-      } ${accessibilitySettings.textAlign ? 'accessibility-text-align' : ''} ${
-        accessibilitySettings.lowSaturation ? 'accessibility-low-saturation' : ''
-      }`}
+      className={`min-h-screen overflow-x-hidden bg-[var(--cream)] text-[var(--charcoal)] ${accessibilitySettings.oversizedWidget ? 'accessibility-oversized-widget' : ''}`}
     >
-      <SplashScreen open={isSplashVisible} />
-      <SmoothCursor disabled={accessibilitySettings.bigCursor || accessibilitySettings.pauseAnimations} />
+      <div
+        className={`${
+          accessibilitySettings.highContrast ? 'accessibility-high-contrast' : ''
+        } ${accessibilitySettings.highlightLinks ? 'accessibility-highlight-links' : ''} ${
+          accessibilitySettings.textSpacing ? 'accessibility-text-spacing' : ''
+        } ${accessibilitySettings.pauseAnimations ? 'accessibility-pause-motion' : ''} ${
+          accessibilitySettings.hideImages ? 'accessibility-hide-images' : ''
+        } ${accessibilitySettings.dyslexiaFriendly ? 'accessibility-dyslexia-friendly' : ''} ${
+          accessibilitySettings.bigCursor ? 'accessibility-big-cursor' : ''
+        } ${accessibilitySettings.tooltips ? 'accessibility-tooltips' : ''} ${
+          accessibilitySettings.lineHeight ? 'accessibility-line-height' : ''
+        } ${accessibilitySettings.textAlign ? 'accessibility-text-align' : ''} ${
+          accessibilitySettings.lowSaturation ? 'accessibility-low-saturation' : ''
+        } ${accessibilitySettings.biggerText ? 'accessibility-bigger-text' : ''}`}
+      >
+        <SplashScreen open={isSplashVisible} />
+        <SiteHeader
+          route={route}
+          language={language}
+          isMobileMenuOpen={isMobileMenuOpen}
+          onToggleMenu={() => setIsMobileMenuOpen((value) => !value)}
+          onToggleLanguage={() => setLanguage((current) => (current === 'en' ? 'es' : 'en'))}
+          onNavigate={navigate}
+        />
+        <div aria-hidden="true" className="h-[7.4rem] sm:h-[6.5rem]" />
 
-      <SiteHeader
-        route={route}
-        isMobileMenuOpen={isMobileMenuOpen}
-        onToggleMenu={() => setIsMobileMenuOpen((value) => !value)}
-        onNavigate={navigate}
-      />
-      <div aria-hidden="true" className="h-[7.4rem] sm:h-[6.5rem]" />
+        <div key={language} className="contents">
+          {route === '/' ? <HomePage onNavigate={navigate} language={language} /> : null}
+          {route === '/about-us' ? <AboutPage onNavigate={navigate} /> : null}
+          {route === '/services' ? <ServicesPage onNavigate={navigate} /> : null}
+          {currentService ? <ServiceDetailPage service={currentService} onNavigate={navigate} /> : null}
+          {route === '/medical-supplies' ? <MedicalSuppliesPage /> : null}
+          {route === '/resources' ? <ResourcesPage /> : null}
+          {route === '/insurance-accepted' ? <InsuranceAcceptedPage onNavigate={navigate} /> : null}
+          {route === '/auto-rx-refills' ? <AutoRxRefillsPage /> : null}
+          {route === '/free-prescription-delivery' ? <FreePrescriptionDeliveryPage /> : null}
+          {route === '/refill-prescription' ? <RefillPrescriptionPage /> : null}
+          {route === '/transfer-prescription' ? <TransferPrescriptionPage /> : null}
+          {route === '/contact-us' ? <ContactPage /> : null}
+          {!['/', '/about-us', '/services', '/medical-supplies', '/resources', '/insurance-accepted', '/contact-us', '/auto-rx-refills', '/free-prescription-delivery', '/refill-prescription', '/transfer-prescription'].includes(route) && !currentService ? <NotFoundPage onNavigate={navigate} /> : null}
+        </div>
 
-      {route === '/' ? <HomePage onNavigate={navigate} /> : null}
-      {route === '/about-us' ? <AboutPage onNavigate={navigate} /> : null}
-      {route === '/services' ? <ServicesPage onNavigate={navigate} /> : null}
-      {currentService ? <ServiceDetailPage service={currentService} onNavigate={navigate} /> : null}
-      {route === '/medical-supplies' ? <MedicalSuppliesPage /> : null}
-      {route === '/resources' ? <ResourcesPage /> : null}
-      {route === '/insurance-accepted' ? <InsuranceAcceptedPage onNavigate={navigate} /> : null}
-      {route === '/refill-prescription' ? <RefillPrescriptionPage /> : null}
-      {route === '/transfer-prescription' ? <TransferPrescriptionPage /> : null}
-      {route === '/contact-us' ? <ContactPage /> : null}
-      {!['/', '/about-us', '/services', '/medical-supplies', '/resources', '/insurance-accepted', '/contact-us', '/refill-prescription', '/transfer-prescription'].includes(route) && !currentService ? <NotFoundPage onNavigate={navigate} /> : null}
-
-      <Footer route={route} onNavigate={navigate} />
+        <Footer route={route} language={language} onNavigate={navigate} />
+      </div>
 
       <AccessibilityWidget
         isOpen={isAccessibilityOpen}
         settings={accessibilitySettings}
         side={accessibilityWidgetSide}
         isHidden={isAccessibilityWidgetHidden}
-        isVisible={!(route === '/' && !isScrollVisible)}
+        isVisible={route !== '/' || isScrollVisible}
         onToggleOpen={() => setIsAccessibilityOpen((value) => !value)}
         onToggleSetting={(key) =>
           setAccessibilitySettings((current) => ({
@@ -1396,7 +1630,10 @@ function App() {
           setIsAccessibilityWidgetHidden((value) => !value);
           setIsAccessibilityOpen(false);
         }}
-        onReset={() => setAccessibilitySettings(defaultAccessibilitySettings)}
+        onReset={() => {
+          setAccessibilitySettings(defaultAccessibilitySettings);
+          setIsAccessibilityOpen(false);
+        }}
       />
 
       {isScrollVisible ? (
@@ -1415,19 +1652,24 @@ function App() {
 
 function SiteHeader({
   route,
+  language,
   isMobileMenuOpen,
   onToggleMenu,
+  onToggleLanguage,
   onNavigate,
 }: {
   route: RoutePath;
+  language: Language;
   isMobileMenuOpen: boolean;
   onToggleMenu: () => void;
+  onToggleLanguage: () => void;
   onNavigate: (path: RoutePath) => void;
 }) {
   const isHeroHeaderRoute = route === '/' || route === '/about-us';
   const [closeDropdown, setCloseDropdown] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const prefersReducedMotion = useReducedMotion();
+  const t = (text: string) => translateTextValue(text, language);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -1452,24 +1694,24 @@ function SiteHeader({
       }`}
     >
       <div className="bg-[var(--gold)] text-[var(--charcoal)]">
-        <div className="mx-auto flex max-w-[1440px] flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-3 py-1.5 text-center sm:px-6 sm:py-2">
-          <p className="text-[0.62rem] font-medium leading-[1.3] sm:leading-none sm:text-[0.72rem] lg:text-[0.84rem]">
-            Personalized pharmacy care and free local delivery for Kissimmee.
+        <div className="mx-auto flex max-w-[1440px] flex-col flex-wrap items-center justify-center gap-1 px-3 py-1.5 text-center sm:flex-row sm:gap-2 sm:px-6 sm:py-2">
+          <p className="text-[0.61rem] font-medium leading-[1.35] sm:leading-none sm:text-[0.72rem] lg:text-[0.84rem]">
+            {t('Personalized pharmacy care and free local delivery for Kissimmee.')}
           </p>
           <span className="hidden h-4 w-px bg-[rgba(26,65,85,0.35)] sm:block" aria-hidden="true" />
           <a
             href={`tel:${phoneNumber.replace(/-/g, '')}`}
-            className="inline-flex items-center justify-center gap-1 whitespace-nowrap text-[0.65rem] font-semibold leading-none transition hover:opacity-80 sm:text-[0.72rem] lg:text-[0.84rem]"
+            className="inline-flex items-center justify-center gap-1 text-[0.65rem] font-semibold leading-none transition hover:opacity-80 sm:text-[0.72rem] lg:text-[0.84rem]"
           >
             <Phone size={12} />
-            Call {phoneNumber}
+            {t('Call')} {phoneNumber}
           </a>
         </div>
       </div>
 
       <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
         <button type="button" onClick={() => handleNavigate('/')} className="shrink-0">
-          <BrandLockup dark={isHeroHeaderRoute} />
+          <BrandLockup dark={isHeroHeaderRoute} language={language} />
         </button>
 
         <nav className="hidden flex-1 items-center justify-center gap-2 lg:flex">
@@ -1493,7 +1735,7 @@ function SiteHeader({
                           : 'border-transparent text-[var(--charcoal)] hover:text-[var(--teal)]'
                     }`}
                   >
-                    {item.label}
+                    {t(item.label)}
                     <ChevronDown
                       size={15}
                       className={`transition-transform duration-200 group-hover:rotate-180 ${
@@ -1507,10 +1749,10 @@ function SiteHeader({
                       <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
                         <div>
                           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[var(--teal)]">
-                            Explore Marigold services
+                            {t('Explore Marigold services')}
                           </p>
                           <p className="mt-2 text-sm leading-6 text-[var(--slate)]">
-                            All the pharmacy support you see on the site, grouped for fast navigation.
+                            {t('All the pharmacy support you see on the site, grouped for fast navigation.')}
                           </p>
                         </div>
                         <button
@@ -1518,7 +1760,7 @@ function SiteHeader({
                           onClick={() => handleNavigate('/services')}
                           className="inline-flex items-center gap-2 rounded-full bg-[var(--gold)] px-4 py-2 text-sm font-semibold text-[var(--charcoal)] shadow-[0_14px_30px_rgba(244,180,0,0.22)] transition hover:-translate-y-0.5 hover:bg-[#ffd04d]"
                         >
-                          View all services
+                          {t('View all services')}
                           <ArrowRight size={15} />
                         </button>
                       </div>
@@ -1527,8 +1769,8 @@ function SiteHeader({
                         {serviceMenuGroups.map((group) => (
                           <div key={group.title} className="border-r border-slate-100 p-4 last:border-r-0">
                             <div className="px-2 pb-4">
-                              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--charcoal)]">{group.title}</p>
-                              <p className="mt-2 text-sm leading-6 text-[var(--slate)]">{group.description}</p>
+                              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--charcoal)]">{t(group.title)}</p>
+                              <p className="mt-2 text-sm leading-6 text-[var(--slate)]">{t(group.description)}</p>
                             </div>
 
                             <div className="space-y-1">
@@ -1550,8 +1792,8 @@ function SiteHeader({
                                       <ServiceMenuIcon glyph={entry.glyph} />
                                     </span>
                                     <span className="min-w-0">
-                                      <span className="block text-sm font-semibold leading-5 text-[var(--charcoal)]">{card.title}</span>
-                                      <span className="mt-1 block text-xs leading-5 text-[var(--slate)]">{entry.note}</span>
+                                      <span className="block text-sm font-semibold leading-5 text-[var(--charcoal)]">{t(card.title)}</span>
+                                      <span className="mt-1 block text-xs leading-5 text-[var(--slate)]">{t(entry.note)}</span>
                                     </span>
                                   </button>
                                 );
@@ -1589,11 +1831,28 @@ function SiteHeader({
                         : 'border-transparent text-[var(--charcoal)] hover:text-[var(--teal)]'
                 }`}
               >
-                {item.label}
+                {t(item.label)}
               </button>
             );
           })}
         </nav>
+
+        <button
+          type="button"
+          data-no-translate="true"
+          aria-label={language === 'en' ? 'Switch language to Spanish' : 'Cambiar idioma a inglés'}
+          onClick={onToggleLanguage}
+          className={`inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[0.72rem] font-bold shadow-[0_14px_28px_rgba(15,23,42,0.16)] transition hover:-translate-y-0.5 sm:h-11 sm:gap-2 sm:px-4 sm:text-sm ${
+            isHeroHeaderRoute
+              ? 'border-[#ffe08a]/70 bg-[var(--gold)] text-[var(--charcoal)] hover:bg-[#ffd04d]'
+              : 'border-[rgba(15,118,110,0.18)] bg-[var(--teal)] text-white hover:bg-[#0b645e]'
+          }`}
+        >
+          <Languages size={17} />
+          <span>{language === 'en' ? 'EN' : 'ES'}</span>
+          <ArrowLeftRight size={14} aria-hidden="true" />
+          <span>{language === 'en' ? 'ES' : 'EN'}</span>
+        </button>
 
         <button
           type="button"
@@ -1639,7 +1898,7 @@ function SiteHeader({
                           : 'text-[var(--charcoal)]'
                     }`}
                   >
-                    {item.label}
+                    {t(item.label)}
                   </motion.button>
                 );
               })}
@@ -1652,11 +1911,18 @@ function SiteHeader({
   );
 }
 
-function HomePage({ onNavigate }: { onNavigate: (path: RoutePath) => void }) {
+function HomePage({
+  onNavigate,
+  language,
+}: {
+  onNavigate: (path: RoutePath) => void;
+  language: Language;
+}) {
   const [openFaqIndex, setOpenFaqIndex] = useState<number>(-1);
   const [showAllFaqs, setShowAllFaqs] = useState(false);
   const [isContactMapLoaded, setIsContactMapLoaded] = useState(true);
   const testimonialsTrackRef = useRef<HTMLDivElement | null>(null);
+  const t = (text: string) => translateTextValue(text, language);
 
   useEffect(() => {
     const track = testimonialsTrackRef.current;
@@ -1689,6 +1955,12 @@ function HomePage({ onNavigate }: { onNavigate: (path: RoutePath) => void }) {
 
   const visibleFaqs = showAllFaqs ? homeFaqs : homeFaqs.slice(0, 4);
   const featuredResources = resourceHighlights.slice(0, 3);
+  const isSpanish = language === 'es';
+  const heroTitleClass = isSpanish
+    ? 'font-ui text-[2.25rem] font-bold leading-[1] tracking-normal text-white sm:text-[2.85rem] lg:text-[3.45rem] xl:text-[3.85rem]'
+    : 'font-ui text-[clamp(2.45rem,4.3vw,4.45rem)] font-bold leading-[0.98] tracking-[-0.035em] text-white sm:text-[clamp(2.85rem,4.7vw,4.45rem)]';
+  const heroLineClass = isSpanish ? 'block max-w-[11ch] text-balance' : 'block whitespace-nowrap';
+  const quickActionTopClass = isSpanish ? 'text-[14px] sm:text-[15px] lg:text-[16px]' : 'text-[15px] sm:text-[16px] lg:text-[17px]';
   const featuredResourceThemes = [
     {
       shell: 'bg-[#f6f2eb] text-[var(--charcoal)] border-[rgba(15,118,110,0.08)]',
@@ -1733,47 +2005,54 @@ function HomePage({ onNavigate }: { onNavigate: (path: RoutePath) => void }) {
 
   return (
     <>
-      <section className="relative flex min-h-[88svh] items-center overflow-hidden bg-[#1f6f68] text-white">
+      <section className="relative flex min-h-[calc(100svh-7.4rem)] items-center overflow-hidden bg-[#eef8f5] text-white sm:min-h-[calc(100svh-6.5rem)]">
+        <img
+          src={homeHeroImage}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover object-[84%_45%] sm:object-[78%_48%] lg:object-[72%_52%]"
+          decoding="async"
+          fetchPriority="high"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,45,40,0.58)_0%,rgba(8,59,53,0.36)_42%,rgba(8,59,53,0.12)_72%,rgba(8,59,53,0.02)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,18,17,0.18)_0%,rgba(4,18,17,0.02)_44%,rgba(4,18,17,0.24)_100%)]" />
         <HomeHeroBackdrop />
-        <div className="mx-auto grid min-h-[88svh] max-w-[1440px] items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_1fr] lg:gap-8 lg:px-8 lg:py-20">
-          <div className="relative z-10 flex max-w-[39rem] flex-col justify-center self-center lg:pl-6">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#fff5cc]">Personalized care in Kissimmee</p>
-            <h1 className="font-ui text-[clamp(3.5rem,8vw,7rem)] font-bold leading-[0.92] tracking-[-0.08em] text-white">
-              <span className="mt-5 block whitespace-nowrap">Your Health.</span>
-              <span className="block whitespace-nowrap text-[rgba(255,245,216,0.98)]">Our Priority.</span>
+        <div className="grid min-h-[calc(100svh-7.4rem)] w-full items-center px-4 py-12 sm:min-h-[calc(100svh-6.5rem)] sm:px-8 sm:py-14 lg:px-[clamp(2rem,5vw,6rem)] lg:py-16">
+          <div className="relative z-10 flex max-w-[34rem] flex-col justify-center self-center pt-8 text-left sm:pt-12 lg:pt-16">
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#fff5cc]">{t('Personalized care in Kissimmee')}</p>
+            <h1 className={heroTitleClass}>
+              <span className={`mt-5 ${heroLineClass}`}>{t('Your Health.')}</span>
+              <span className={`${heroLineClass} text-[rgba(255,245,216,0.98)]`}>{t('Our Priority.')}</span>
             </h1>
-            <p className="mt-8 max-w-[35rem] text-[1.08rem] leading-8 text-white/80 sm:text-[1.18rem]">
-              Trusted neighborhood pharmacy providing personalized care, prescription services, medication management,
-              free delivery, immunizations, and wellness support for the Kissimmee community.
+            <p className="mt-7 max-w-[31rem] text-[1rem] leading-8 text-white/82 sm:text-[1.08rem]">
+              {t(
+                'Personalized pharmacy care, refills, delivery, immunizations, and wellness support for Kissimmee.',
+              )}
             </p>
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => onNavigate('/refill-prescription')}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--gold)] px-6 py-3.5 text-sm font-semibold text-[var(--charcoal)] shadow-[0_18px_40px_rgba(244,180,0,0.28)] transition-transform duration-300 hover:-translate-y-0.5 hover:bg-[#ffd04d]"
-              >
-                Refill prescription
-              </button>
-              <button
-                type="button"
-                onClick={() => onNavigate('/transfer-prescription')}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-white/12 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(10,51,47,0.22)] ring-1 ring-white/24 transition-transform duration-300 hover:-translate-y-0.5 hover:bg-white/18"
-              >
-                Transfer prescription
-              </button>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-white/72">
-              {['Free Delivery', 'Prescription Transfers', 'Immunizations', 'Health Mart Partner'].map((item) => (
-                <div key={item} className="inline-flex items-center gap-2">
-                  <CheckCircle2 size={15} className="text-[#f4c94b]" />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+            <div className="mt-10 grid w-full max-w-[460px] grid-cols-2 justify-start gap-3 sm:mt-12 sm:gap-4">
+              {heroQuickActions.map((item) => {
+                const Icon = item.icon;
 
-          <div className="relative min-h-[28rem] sm:min-h-[33rem] lg:min-h-[40rem] lg:translate-x-[70px]">
-            <HomeHeroArtwork />
+                return (
+                  <button
+                    key={item.bottom}
+                    type="button"
+                    onClick={() => onNavigate(item.route)}
+                    className={`group relative flex min-h-[96px] items-center gap-3 overflow-hidden rounded-[1rem] border px-4 py-4 text-left backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(15,23,42,0.18)] ${item.cardClass}`}
+                  >
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-current opacity-20" />
+                    <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${item.iconClass}`}>
+                      <Icon size={19} className="transition-transform duration-300 group-hover:scale-110" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className={`${quickActionTopClass} whitespace-nowrap font-semibold leading-tight`}>{t(item.top)}</div>
+                      <div className={`mt-0.5 whitespace-nowrap text-[14px] font-semibold leading-tight sm:text-[15px] ${item.bottomClass}`}>{t(item.bottom)}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
           </div>
         </div>
       </section>
@@ -1849,54 +2128,57 @@ function HomePage({ onNavigate }: { onNavigate: (path: RoutePath) => void }) {
         </div>
       </section>
 
-      <section className="section-pad relative overflow-hidden min-h-[50vh]">
+      <section className="section-pad relative overflow-hidden min-h-[42vh]">
         <div className="pointer-events-none absolute left-[-2rem] top-[-2rem] z-0 h-[16rem] w-[16rem] opacity-100 transform rotate-[25deg]">
           <CircularTabletShape className="h-full w-full text-[var(--gold)] drop-shadow-[0_20px_40px_rgba(244,180,0,0.3)]" />
         </div>
         <div className="container-shell relative z-10">
-          <div className="mb-5 max-w-4xl">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.22em] text-[var(--teal)]">Pharmacy services</p>
-            <h2 className="text-4xl font-bold tracking-tight text-[var(--charcoal)] sm:text-5xl">
-              This is our pharmacy services section
+          <div className="mb-5 max-w-3xl">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.22em] text-[var(--teal)]">{t('Pharmacy services')}</p>
+            <h2 className="text-3xl font-bold text-[var(--charcoal)] sm:text-4xl">
+              {t('Core pharmacy services')}
             </h2>
-            <p className="mt-4 max-w-3xl text-lg leading-8 text-[var(--slate)]">
-              These are Marigold&apos;s core pharmacy services, shown here clearly so you can move quickly to the support you
-              actually need.
+            <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--slate)]">
+              {t('Refills, delivery, transfers, and everyday medication support in one place.')}
             </p>
           </div>
 
           <div className="grid gap-4 sm:gap-5 md:grid-cols-2">
-            {serviceCards.slice(0, 4).map((card) => (
-              <button
-                key={card.slug}
-                type="button"
-                onClick={() => onNavigate(`/services/${card.slug}`)}
-                className="group relative flex min-h-[18.75rem] flex-col overflow-hidden rounded-[1.6rem] bg-[#0c1c25] text-left shadow-[0_22px_48px_rgba(15,118,110,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(15,118,110,0.12)]"
-              >
-                <img
-                  src={card.image}
-                  alt={card.title}
-                  className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/60 to-black/24" />
-                <div className="relative z-10 flex min-h-[18.75rem] flex-1 flex-col justify-end p-5 sm:p-6">
-                  <h3 className="font-heading text-[clamp(1.8rem,3vw,2.6rem)] font-semibold leading-[0.96] tracking-[-0.05em] text-white">
-                    {card.title}
-                  </h3>
-                  <p className="mt-3 max-w-xl text-sm leading-6 text-white/86 opacity-0 translate-y-2 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                    {card.description}
-                  </p>
-                  <div className="mt-4 flex items-center justify-between gap-3">
-                    <span className="text-sm font-semibold text-white/92">View more</span>
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/18 bg-white/12 text-white transition group-hover:-translate-y-0.5">
-                      <ArrowRight size={16} />
-                    </span>
+            {homeServiceHighlights.map((card) => {
+              return (
+                <button
+                  key={`${card.top}-${card.bottom}`}
+                  type="button"
+                  onClick={() => onNavigate(card.route)}
+                  className="group relative min-h-[18rem] overflow-hidden rounded-[1.6rem] bg-[#0c1c25] text-left shadow-[0_22px_48px_rgba(15,118,110,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(15,118,110,0.12)]"
+                >
+                  <img
+                    src={card.image}
+                    alt={t(`${card.top} ${card.bottom}`)}
+                    className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/58 to-black/24" />
+                  <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-white/72">{t(card.category)}</p>
+                    <h3 className="mt-3 font-heading text-[clamp(1.8rem,3vw,2.55rem)] font-semibold leading-[0.96] tracking-[-0.05em] text-white">
+                      <span className="block">{t(card.top)}</span>
+                      <span className="block">{t(card.bottom)}</span>
+                    </h3>
+                    <p className="mt-3 max-w-xl text-sm leading-6 text-white/84 opacity-0 translate-y-2 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      {t(card.description)}
+                    </p>
+                    <div className="mt-4 flex items-center justify-between gap-3">
+                      <span className="text-sm font-semibold text-white/92">{t('Click Here')} &gt;</span>
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/18 bg-white/12 text-white transition group-hover:-translate-y-0.5">
+                        <ArrowRight size={16} />
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
 
           <div className="mt-8 flex justify-center">
@@ -2147,10 +2429,8 @@ function HomePage({ onNavigate }: { onNavigate: (path: RoutePath) => void }) {
             </div>
 
             <div className="flex items-center lg:pl-4">
-              <div className="relative w-full overflow-hidden rounded-[2.2rem] border border-[rgba(15,118,110,0.08)] bg-[linear-gradient(145deg,#fffaf1_0%,#ffffff_68%)] p-6 shadow-[0_24px_55px_rgba(15,23,42,0.1)] sm:p-8">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-[linear-gradient(90deg,#f4c44c_0%,#ef8b2c_52%,rgba(15,118,110,0.24)_100%)]" />
-                <div className="pointer-events-none absolute right-[-2rem] top-[-2rem] h-28 w-28 rounded-full bg-[rgba(244,196,76,0.12)] blur-2xl" />
-                <div className="inline-flex rounded-full border border-[rgba(244,180,0,0.16)] bg-[rgba(244,180,0,0.14)] px-4 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[var(--charcoal)]">
+              <div className="w-full border-l border-[rgba(15,118,110,0.12)] pl-6 sm:pl-8">
+                <div className="inline-flex rounded-full border border-[rgba(244,180,0,0.16)] bg-[rgba(244,180,0,0.08)] px-4 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[var(--charcoal)]">
                   Insurance accepted
                 </div>
                 <h3 className="mt-5 text-3xl font-semibold leading-[1.08] tracking-[-0.045em] text-[var(--charcoal)]">
@@ -2161,7 +2441,7 @@ function HomePage({ onNavigate }: { onNavigate: (path: RoutePath) => void }) {
                   Ask about lower-cost options, including our $4 prescription plan.
                 </p>
 
-                <div className="mt-7 space-y-3">
+                <div className="mt-7 space-y-4 border-t border-[rgba(15,118,110,0.12)] pt-6">
                   <div className="flex items-start gap-3">
                     <span className="mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[rgba(15,118,110,0.08)] text-[var(--teal)]">
                       <CheckCircle2 size={15} />
@@ -2555,12 +2835,6 @@ function AboutPage({ onNavigate }: { onNavigate: (path: RoutePath) => void }) {
 }
 
 function ServicesPage({ onNavigate }: { onNavigate: (path: RoutePath) => void }) {
-  const initialVisibleCount = 6;
-  const revealRowCount = 3;
-  const [visibleServiceCount, setVisibleServiceCount] = useState(initialVisibleCount);
-  const visibleServices = serviceCards.slice(0, visibleServiceCount);
-  const hasMoreServices = visibleServiceCount < serviceCards.length;
-
   return (
     <section className="section-pad pt-10 sm:pt-8 lg:pt-10 relative overflow-hidden min-h-[50vh]">
       <div className="page-shell relative z-10">
@@ -2584,7 +2858,7 @@ function ServicesPage({ onNavigate }: { onNavigate: (path: RoutePath) => void })
         </div>
 
         <div className="mt-4 grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {visibleServices.map((card) => (
+          {serviceCards.map((card) => (
             <button
               key={card.slug}
               type="button"
@@ -2617,23 +2891,6 @@ function ServicesPage({ onNavigate }: { onNavigate: (path: RoutePath) => void })
           ))}
         </div>
 
-        {serviceCards.length > initialVisibleCount ? (
-          <div className="mt-10 flex justify-center">
-            <button
-              type="button"
-              onClick={() =>
-                setVisibleServiceCount((count) =>
-                  hasMoreServices ? Math.min(count + revealRowCount, serviceCards.length) : initialVisibleCount,
-                )
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--gold)] px-6 py-3.5 text-sm font-semibold text-[var(--charcoal)] shadow-[0_18px_40px_rgba(244,180,0,0.28)] transition-transform duration-300 hover:-translate-y-0.5 hover:bg-[#ffd04d]"
-            >
-              {hasMoreServices ? 'View more' : 'Show less'}
-              <ArrowRight size={15} className={hasMoreServices ? 'transition' : 'rotate-180 transition'} />
-            </button>
-          </div>
-        ) : null}
-
       </div>
     </section>
   );
@@ -2648,17 +2905,25 @@ function ServiceDetailPage({
 }) {
   const relatedServices = serviceCards.filter((item) => item.slug !== service.slug).slice(0, 3);
   const primaryActionRoute =
-    service.slug === 'pharmacy-refill-prescription'
+    service.slug === 'prescription-refill'
       ? '/refill-prescription'
-      : service.slug === 'pharmacy-transfer-prescription'
+      : service.slug === 'transfer-prescriptions'
         ? '/transfer-prescription'
-        : '/contact-us';
+        : service.slug === 'free-prescription-delivery'
+          ? '/free-prescription-delivery'
+          : service.slug === 'medication-synchronization'
+            ? '/auto-rx-refills'
+            : '/contact-us';
   const primaryActionLabel =
-    service.slug === 'pharmacy-refill-prescription'
+    service.slug === 'prescription-refill'
       ? 'Start refill request'
-      : service.slug === 'pharmacy-transfer-prescription'
+      : service.slug === 'transfer-prescriptions'
         ? 'Start transfer request'
-        : 'Ask about this service';
+        : service.slug === 'free-prescription-delivery'
+          ? 'Start delivery request'
+          : service.slug === 'medication-synchronization'
+            ? 'Start Auto Rx request'
+            : 'Ask about this service';
   const supportThemes = [
     'bg-[#f6efe5] border-[rgba(15,118,110,0.08)]',
     'bg-[#e9f4f2] border-[rgba(15,118,110,0.08)]',
@@ -2980,12 +3245,13 @@ function ResourcesPage() {
   ] as const;
 
   const renderResourceCard = (
-    item: { category: string; title: string; description: string; href: string; cta: string },
+    item: { category: string; title: string; description: string; href: string; cta: string; image?: string },
     index: number,
     size: 'feature' | 'compact' = 'feature',
   ) => {
     const theme = resourceCardThemes[index % resourceCardThemes.length];
     const Icon = theme.Icon;
+    const hasImage = Boolean(item.image);
 
     return (
       <a
@@ -2993,17 +3259,39 @@ function ResourcesPage() {
         href={item.href}
         target="_blank"
         rel="noreferrer"
-        className={`group relative min-h-[11.75rem] overflow-hidden rounded-[1.8rem] border shadow-[0_22px_48px_rgba(15,118,110,0.12)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_54px_rgba(15,118,110,0.16)] ${theme.shell}`}
+        className={`group relative min-h-[13.5rem] overflow-hidden rounded-[1.8rem] border shadow-[0_22px_48px_rgba(15,118,110,0.12)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_54px_rgba(15,118,110,0.16)] ${
+          hasImage ? 'border-white/12 bg-[#0c1c25] text-white' : theme.shell
+        }`}
       >
-        <div className={`pointer-events-none absolute inset-0 ${theme.accent}`} />
-        <div className="pointer-events-none absolute bottom-5 right-5 h-24 w-24 rounded-full border border-white/18 bg-white/8 blur-[1px]" />
+        {hasImage ? (
+          <>
+            <img
+              src={item.image}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+              loading="lazy"
+              decoding="async"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,14,19,0.16),rgba(5,14,19,0.84))]" />
+          </>
+        ) : (
+          <>
+            <div className={`pointer-events-none absolute inset-0 ${theme.accent}`} />
+            <div className="pointer-events-none absolute bottom-5 right-5 h-24 w-24 rounded-full border border-white/18 bg-white/8 blur-[1px]" />
+          </>
+        )}
 
         <div className="relative z-10 flex h-full flex-col justify-between p-4 sm:p-5">
           <div className="flex items-start justify-between gap-4">
-            <p className={`inline-flex rounded-full px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.24em] ${theme.eyebrow}`}>
+            <p className={`inline-flex rounded-full px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.24em] ${
+              hasImage ? 'bg-white/14 text-white backdrop-blur-md' : theme.eyebrow
+            }`}>
               {item.category}
             </p>
-            <span className={`inline-flex h-12 w-12 items-center justify-center rounded-[1rem] ${theme.iconWrap}`}>
+            <span className={`inline-flex h-12 w-12 items-center justify-center rounded-[1rem] ${
+              hasImage ? 'bg-white/14 text-white backdrop-blur-md' : theme.iconWrap
+            }`}>
               <Icon size={22} />
             </span>
           </div>
@@ -3016,12 +3304,14 @@ function ResourcesPage() {
             >
               {item.title}
             </h3>
-            <p className={`mt-1.5 max-w-xl text-sm leading-6 sm:text-[15px] ${theme.body}`}>{item.description}</p>
+            <p className={`mt-1.5 max-w-xl text-sm leading-6 sm:text-[15px] ${hasImage ? 'text-white/84' : theme.body}`}>{item.description}</p>
           </div>
 
           <div className="mt-4 flex items-center justify-between gap-3">
-            <span className={`text-sm font-semibold ${theme.cta}`}>{item.cta}</span>
-            <span className={`inline-flex h-10 w-10 items-center justify-center rounded-full border border-current/20 transition group-hover:-translate-y-0.5 ${theme.cta}`}>
+            <span className={`text-sm font-semibold ${hasImage ? 'text-white' : theme.cta}`}>{item.cta}</span>
+            <span className={`inline-flex h-10 w-10 items-center justify-center rounded-full border border-current/20 transition group-hover:-translate-y-0.5 ${
+              hasImage ? 'text-white' : theme.cta
+            }`}>
               <ArrowRight size={16} />
             </span>
           </div>
@@ -3067,6 +3357,90 @@ function ResourcesPage() {
               </button>
             </div>
           ) : null}
+        </div>
+      </div>
+    </ContentPageShell>
+  );
+}
+
+function AutoRxRefillsPage() {
+  return (
+    <ContentPageShell title="" eyebrow="" intro="" hideShapes>
+      <div className="space-y-8">
+        <div className="relative left-1/2 right-1/2 -mt-10 w-screen -translate-x-1/2 overflow-hidden border-y border-[rgba(15,118,110,0.1)] bg-[#0c1c25] shadow-[0_24px_60px_-36px_rgba(15,23,42,0.42)] sm:-mt-8 lg:-mt-10">
+          <div className="relative min-h-[20rem] sm:min-h-[23rem]">
+            <img
+              src="https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=1600&q=80"
+              alt="Medication bottles prepared for automatic refills"
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,25,24,0.12),rgba(7,25,24,0.72))]" />
+            <div className="absolute inset-x-0 bottom-0 p-7 text-center sm:p-9">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-white/72">Auto Rx refills</p>
+              <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">
+                Subscribe to Auto Rx refills
+              </h1>
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/86 sm:text-base">
+                Tell us which recurring prescriptions you want coordinated and our team will help set up a steadier refill rhythm.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-auto w-full max-w-5xl rounded-[1.9rem] border border-[rgba(15,118,110,0.1)] bg-white p-7 shadow-[0_22px_48px_rgba(15,118,110,0.08)] sm:p-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="inline-flex rounded-full bg-[rgba(244,180,0,0.18)] px-4 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[var(--charcoal)]">
+                Auto refill request
+              </div>
+              <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-[var(--charcoal)] sm:text-4xl">
+                Set up recurring refill support
+              </h2>
+            </div>
+            <p className="text-sm font-medium text-[var(--slate)]">* Required information</p>
+          </div>
+
+          <form className="mt-8 space-y-8">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormInput label="First Name" placeholder="Enter first name here" required />
+              <FormInput label="Last Name" placeholder="Enter last name here" required />
+              <FormInput label="Phone Number" placeholder="Enter phone number here" required />
+              <FormInput label="Date of Birth" placeholder="Enter date of birth here" type="date" required />
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--teal)]">Prescription details</p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <FormInput label="Prescription Name" placeholder="Enter medication name here" required />
+                <FormInput label="RX Number" placeholder="Enter RX number here" />
+                <FormSelect label="Preferred refill reminder" options={['Phone call', 'Text message', 'No reminder needed']} />
+                <FormSelect label="Pickup or delivery" required options={['Pickup', 'Delivery']} />
+              </div>
+            </div>
+
+            <div>
+              <FormLabel label="Notes for the pharmacy team" />
+              <textarea
+                rows={5}
+                placeholder="Add timing, delivery, or medication notes here"
+                className="w-full rounded-[22px] border border-[rgba(15,118,110,0.14)] bg-[rgba(15,118,110,0.02)] px-4 py-3 text-sm text-[var(--charcoal)] outline-none transition-colors placeholder:text-[var(--slate)]/70 focus:border-[var(--teal)]"
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <button type="button" className="btn-primary">
+                Submit Auto Rx request
+              </button>
+              <a
+                href={`tel:${phoneNumber.replace(/-/g, '')}`}
+                className="inline-flex items-center justify-center rounded-full border border-[rgba(15,118,110,0.18)] px-6 py-3.5 text-sm font-semibold text-[var(--teal)] transition hover:-translate-y-0.5 hover:border-[var(--teal)]"
+              >
+                Call {phoneNumber}
+              </a>
+            </div>
+          </form>
         </div>
       </div>
     </ContentPageShell>
@@ -3216,6 +3590,87 @@ function RefillPrescriptionPage() {
   );
 }
 
+function FreePrescriptionDeliveryPage() {
+  return (
+    <ContentPageShell title="" eyebrow="" intro="" hideShapes>
+      <div className="space-y-8">
+        <div className="relative left-1/2 right-1/2 -mt-10 w-screen -translate-x-1/2 overflow-hidden border-y border-[rgba(15,118,110,0.1)] bg-[#0c1c25] shadow-[0_24px_60px_-36px_rgba(15,23,42,0.42)] sm:-mt-8 lg:-mt-10">
+          <div className="relative min-h-[20rem] sm:min-h-[23rem]">
+            <img
+              src="https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1600&q=80"
+              alt="Prescription delivery coordination"
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,25,24,0.12),rgba(7,25,24,0.72))]" />
+            <div className="absolute inset-x-0 bottom-0 p-7 text-center sm:p-9">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-white/72">Free prescription delivery</p>
+              <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">
+                Request prescription delivery
+              </h1>
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/86 sm:text-base">
+                Share your delivery details and our pharmacy team will coordinate the next step for eligible prescriptions.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-auto w-full max-w-5xl rounded-[1.9rem] border border-[rgba(15,118,110,0.1)] bg-white p-7 shadow-[0_22px_48px_rgba(15,118,110,0.08)] sm:p-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="inline-flex rounded-full bg-[rgba(244,180,0,0.18)] px-4 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[var(--charcoal)]">
+                Delivery request
+              </div>
+              <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-[var(--charcoal)] sm:text-4xl">
+                Free prescription delivery
+              </h2>
+            </div>
+            <p className="text-sm font-medium text-[var(--slate)]">* Required information</p>
+          </div>
+
+          <form className="mt-8 space-y-8">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormInput label="First Name" placeholder="Enter first name here" required />
+              <FormInput label="Last Name" placeholder="Enter last name here" required />
+              <FormInput label="Phone Number" placeholder="Enter phone number here" required />
+              <FormInput label="RX Number" placeholder="Enter RX number here" />
+              <div className="sm:col-span-2">
+                <FormInput label="Delivery Address" placeholder="Enter delivery address here" required />
+              </div>
+              <FormInput label="City" placeholder="Enter city here" required />
+              <FormSelect label="State" required options={usStates} />
+              <FormInput label="Zip / Postal Code" placeholder="Enter zip or postal code here" required />
+              <FormSelect label="Best delivery window" options={['Morning', 'Afternoon', 'Any available time']} />
+            </div>
+
+            <div>
+              <FormLabel label="Delivery notes" />
+              <textarea
+                rows={5}
+                placeholder="Add gate codes, preferred contact method, or delivery notes here"
+                className="w-full rounded-[22px] border border-[rgba(15,118,110,0.14)] bg-[rgba(15,118,110,0.02)] px-4 py-3 text-sm text-[var(--charcoal)] outline-none transition-colors placeholder:text-[var(--slate)]/70 focus:border-[var(--teal)]"
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <button type="button" className="btn-primary">
+                Submit delivery request
+              </button>
+              <a
+                href={`tel:${phoneNumber.replace(/-/g, '')}`}
+                className="inline-flex items-center justify-center rounded-full border border-[rgba(15,118,110,0.18)] px-6 py-3.5 text-sm font-semibold text-[var(--teal)] transition hover:-translate-y-0.5 hover:border-[var(--teal)]"
+              >
+                Call {phoneNumber}
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </ContentPageShell>
+  );
+}
+
 function TransferPrescriptionPage() {
   const transferRows = [1, 2, 3, 4, 5] as const;
 
@@ -3325,35 +3780,62 @@ function TransferPrescriptionPage() {
 function ContactPage() {
   return (
     <ContentPageShell
-      title="Need help?"
-      eyebrow="Contact Us"
-      intro="Please reach out if you have questions, prescription concerns, or need support from the pharmacy team."
+      title=""
+      eyebrow=""
+      intro=""
+      hideShapes
     >
-      <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="rounded-[34px] border border-[rgba(15,118,110,0.1)] bg-white p-8 shadow-[0_22px_48px_rgba(15,118,110,0.08)]">
-          <div className="grid gap-4">
-            <input
-              type="text"
-              placeholder="Full name"
-              className="rounded-[18px] border border-[rgba(15,118,110,0.14)] bg-[rgba(15,118,110,0.02)] px-4 py-3 text-sm outline-none transition-colors focus:border-[var(--teal)]"
+      <div className="space-y-8">
+        <div className="relative left-1/2 right-1/2 -mt-10 w-screen -translate-x-1/2 overflow-hidden border-y border-[rgba(15,118,110,0.1)] bg-[#0c1c25] shadow-[0_24px_60px_-36px_rgba(15,23,42,0.42)] sm:-mt-8 lg:-mt-10">
+          <div className="relative min-h-[20rem] sm:min-h-[23rem]">
+            <img
+              src="https://images.unsplash.com/photo-1585435557343-3b092031a831?auto=format&fit=crop&w=1600&q=80"
+              alt="Pharmacy team ready to help patients"
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
             />
-            <input
-              type="email"
-              placeholder="Email address"
-              className="rounded-[18px] border border-[rgba(15,118,110,0.14)] bg-[rgba(15,118,110,0.02)] px-4 py-3 text-sm outline-none transition-colors focus:border-[var(--teal)]"
-            />
-            <textarea
-              placeholder="Enter your message here"
-              rows={8}
-              className="rounded-[22px] border border-[rgba(15,118,110,0.14)] bg-[rgba(15,118,110,0.02)] px-4 py-3 text-sm outline-none transition-colors focus:border-[var(--teal)]"
-            />
-            <button type="button" className="btn-primary w-auto self-start px-5 py-3">
-              Send message
-            </button>
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,25,24,0.12),rgba(7,25,24,0.72))]" />
+            <div className="absolute inset-x-0 bottom-0 p-7 text-center sm:p-9">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-white/72">Local pharmacy help</p>
+              <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">
+                Reach a real pharmacy team when questions come up.
+              </h1>
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/86 sm:text-base">
+                Please reach out if you have questions, prescription concerns, or need support from the pharmacy team.
+              </p>
+            </div>
           </div>
         </div>
 
-        <ContactInfoCard compact />
+        <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="rounded-[34px] border border-[rgba(15,118,110,0.1)] bg-white p-8 shadow-[0_22px_48px_rgba(15,118,110,0.08)]">
+            <div className="grid gap-4">
+              <input
+                type="text"
+                placeholder="Full name"
+                className="rounded-[18px] border border-[rgba(15,118,110,0.14)] bg-[rgba(15,118,110,0.02)] px-4 py-3 text-sm outline-none transition-colors focus:border-[var(--teal)]"
+              />
+              <input
+                type="email"
+                placeholder="Email address"
+                className="rounded-[18px] border border-[rgba(15,118,110,0.14)] bg-[rgba(15,118,110,0.02)] px-4 py-3 text-sm outline-none transition-colors focus:border-[var(--teal)]"
+              />
+              <textarea
+                placeholder="Enter your message here"
+                rows={8}
+                className="rounded-[22px] border border-[rgba(15,118,110,0.14)] bg-[rgba(15,118,110,0.02)] px-4 py-3 text-sm outline-none transition-colors focus:border-[var(--teal)]"
+              />
+              <button type="button" className="btn-primary w-auto self-start px-5 py-3">
+                Send message
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            <ContactInfoCard compact />
+          </div>
+        </div>
       </div>
     </ContentPageShell>
   );
@@ -3667,11 +4149,15 @@ function ContactInfoCard({ compact = false }: { compact?: boolean }) {
 
 function Footer({
   route,
+  language,
   onNavigate,
 }: {
   route: RoutePath;
+  language: Language;
   onNavigate: (path: RoutePath) => void;
 }) {
+  const t = (text: string) => translateTextValue(text, language);
+
   return (
     <footer className="relative overflow-hidden bg-[#0d3d3a] pb-12 pt-16 text-white">
       <div className="pointer-events-none absolute bottom-[-6rem] right-[-6rem] hidden h-[20rem] w-[20rem] rotate-12 lg:block">
@@ -3682,15 +4168,24 @@ function Footer({
           <div className="grid w-full gap-8 px-1 py-2 sm:px-2 lg:grid-cols-[0.95fr_1fr_1fr_1fr] lg:gap-12">
             <div className="min-w-0 xl:pr-4">
               <div className="origin-left scale-[1.15] sm:scale-[1.3]">
-                <BrandLockup dark compact />
+                <BrandLockup dark compact language={language} />
               </div>
               <p className="mt-5 max-w-sm text-sm leading-7 text-white/82">
-                Marigold Pharmacy brings personalized prescription care, neighborhood delivery, medication coordination,
-                and warm follow-through to families across Kissimmee.
+                {t(
+                  'Marigold Pharmacy brings personalized prescription care, neighborhood delivery, medication coordination, and warm follow-through to families across Kissimmee.',
+                )}
               </p>
-              <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white/92">
-                <ShieldCheck size={14} className="text-[var(--gold)]" />
-                Health Mart affiliated
+              <div className="mt-5 inline-flex flex-col items-start gap-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--gold)]">
+                  {t('Health Mart affiliated')}
+                </p>
+                <img
+                  src="/assets/health-mart-affiliated.png"
+                  alt="Health Mart affiliated"
+                  className="block h-auto w-[11.5rem] max-w-full sm:w-[12.75rem]"
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
             </div>
 
@@ -3700,7 +4195,7 @@ function Footer({
                   <MapPin size={22} />
                 </span>
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white">Address</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white">{t('Address')}</p>
                   <p className="mt-3 text-sm leading-7 text-white/84">
                     {streetAddress}
                     <br />
@@ -3713,7 +4208,7 @@ function Footer({
                   <Phone size={21} />
                 </span>
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white">Phone</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white">{t('Phone')}</p>
                   <a
                     href={`tel:${phoneNumber.replace(/-/g, '')}`}
                     className="mt-3 block text-sm leading-7 text-white/84 transition hover:text-white"
@@ -3727,7 +4222,7 @@ function Footer({
                   <Mail size={22} />
                 </span>
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white">Email</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white">{t('Email')}</p>
                   <a
                     href={`mailto:${emailAddress}`}
                     className="mt-3 block text-sm leading-7 text-white/84 transition hover:text-white"
@@ -3739,20 +4234,20 @@ function Footer({
             </div>
 
             <div className="min-w-0 lg:pl-4">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white">Business Hours</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white">{t('Business Hours')}</p>
               <div className="mt-3 space-y-2 text-sm leading-7 text-white/84">
                 {hours.map(([day, value]) => (
                   <div key={day} className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                    <span className="font-medium text-white">{day}</span>
-                    <span className="whitespace-nowrap">{value}</span>
+                    <span className="font-medium text-white">{t(day)}</span>
+                    <span className="whitespace-nowrap">{t(value)}</span>
                   </div>
                 ))}
-                <p className="pt-2 text-sm text-white/72">Serving Kissimmee and nearby Osceola County neighborhoods.</p>
+                <p className="pt-2 text-sm text-white/72">{t('Serving Kissimmee and nearby Osceola County neighborhoods.')}</p>
               </div>
             </div>
 
             <div className="min-w-0 lg:pl-4">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white">Navigate</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white">{t('Navigate')}</p>
               <ul className="mt-3 space-y-2 text-sm leading-7 text-white/84">
                 {navItems.filter(item => item.path !== '/contact-us').map((item) => (
                   <li key={item.path}>
@@ -3761,14 +4256,18 @@ function Footer({
                       onClick={() => onNavigate(item.path)}
                       className={`transition hover:text-white ${route === item.path ? 'text-white' : 'text-white/84'}`}
                     >
-                      {item.label}
+                      {t(item.label)}
                     </button>
                   </li>
                 ))}
               </ul>
               <div className="mt-5">
-                <button type="button" onClick={() => onNavigate('/contact-us')} className="btn-primary-dark">
-                  Contact Pharmacy
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/contact-us')}
+                  className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-[var(--charcoal)] shadow-[0_16px_32px_rgba(0,0,0,0.12)] transition hover:-translate-y-0.5 hover:bg-[#f7f7f7]"
+                >
+                  {t('Contact Pharmacy')}
                 </button>
               </div>
             </div>
@@ -3778,7 +4277,7 @@ function Footer({
         <div className="pt-8">
           <div className="flex justify-center text-center">
             <p className="text-sm font-medium text-white/76">
-              © {new Date().getFullYear()} Marigold Pharmacy. All Rights Reserved.
+              © {new Date().getFullYear()} Marigold Pharmacy. {t('All Rights Reserved.')}
             </p>
           </div>
         </div>
@@ -3840,25 +4339,45 @@ function AccessibilityWidget({
           type="button"
           aria-label="Show accessibility widget"
           onClick={onToggleHidden}
-          className={`fixed top-1/2 z-[80] inline-flex h-14 items-center gap-2 rounded-full bg-[var(--gold)] px-4 text-sm font-semibold text-[var(--charcoal)] shadow-[0_18px_34px_rgba(244,180,0,0.34)] ${
-            side === 'right' ? 'right-2 -translate-y-1/2' : 'left-2 -translate-y-1/2'
+          className={`fixed top-1/2 z-[80] inline-flex h-[4.25rem] w-[4.25rem] -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-[var(--gold)] text-[var(--charcoal)] shadow-[0_18px_34px_rgba(244,180,0,0.34)] transition hover:scale-105 ${
+            side === 'right' ? 'right-2' : 'left-2'
           }`}
         >
-          <Accessibility size={18} />
-          Show widget
+          <Accessibility size={24} />
         </button>
       ) : null}
 
       <button
         type="button"
-        aria-label="Accessibility settings"
+        aria-label="Open accessibility menu"
         aria-expanded={isOpen}
         onClick={onToggleOpen}
-        className={`fixed top-1/2 z-[80] inline-flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-[var(--gold)] text-[var(--charcoal)] shadow-[0_18px_34px_rgba(244,180,0,0.34)] transition hover:scale-105 ${launcherSideClass} ${
-          isHidden ? 'hidden' : ''
-        }`}
+        className={`accessibility-launcher fixed top-1/2 z-[80] -translate-y-1/2 ${launcherSideClass} ${isHidden ? 'hidden' : ''}`}
       >
-        <Accessibility size={28} />
+        <div className="accessibility-launcher-icon" aria-hidden="true">
+          <svg
+            width="60"
+            height="60"
+            viewBox="0 0 60 60"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            role="img"
+            className="text-[var(--gold)]"
+          >
+            <title>Accessibility icon</title>
+            <g clipPath="url(#accessibility-launcher-clip)">
+              <path
+                d="M30 4.42857C44.1227 4.42857 55.5714 15.8773 55.5714 30C55.5714 44.1227 44.1227 55.5714 30 55.5714C15.8773 55.5714 4.42857 44.1227 4.42857 30C4.42857 15.8773 15.8773 4.42857 30 4.42857ZM30 6.42857C16.9819 6.42857 6.42857 16.9819 6.42857 30C6.42857 43.0181 16.9819 53.5714 30 53.5714C43.0181 53.5714 53.5714 43.0181 53.5714 30C53.5714 16.9819 43.0181 6.42857 30 6.42857ZM40.5936 24.6361C40.8208 24.6942 41.0323 24.8028 41.2129 24.9537C41.3927 25.1041 41.5373 25.2927 41.6362 25.506C41.7349 25.7185 41.7857 25.9505 41.7857 26.1965C41.778 26.578 41.6395 26.9452 41.3936 27.2353C41.1464 27.5268 40.8059 27.7221 40.4376 27.7857C38.1922 28.2018 35.9244 28.4828 33.6481 28.6271C33.5049 28.6367 33.3651 28.6759 33.2369 28.7424C33.1082 28.8091 32.994 28.9019 32.9012 29.0154C32.8079 29.1294 32.7383 29.2618 32.6967 29.4044C32.6759 29.4759 32.6623 29.5493 32.6557 29.6152L32.6511 29.7072L32.6599 29.8496L32.8523 31.5976C33.0926 33.7484 33.5345 35.8702 34.1701 37.9296L34.4174 38.6989L34.6846 39.4673L35.9271 42.8464C35.9992 43.0441 36.0318 43.2542 36.023 43.4646C36.0141 43.6751 35.964 43.8817 35.8755 44.0727C35.7867 44.2639 35.6611 44.4355 35.5059 44.5773C35.3502 44.7196 35.1677 44.829 34.99 44.8912C34.8134 44.9616 34.6253 44.9985 34.4204 45C34.1148 44.9943 33.8175 44.8987 33.5651 44.7253C33.4239 44.6283 33.2998 44.5091 33.189 44.3581L33.0827 44.196L33.0074 44.0456L32.6902 43.3563C31.8321 41.4806 31.0485 39.6428 30.3336 37.8221L30.0025 36.9627L29.5751 38.0696C29.3404 38.6637 29.0998 39.2561 28.8537 39.8465L28.4802 40.7305L27.9044 42.0505L27.3109 43.3601L27.0273 43.9426C26.881 44.3389 26.585 44.6608 26.2035 44.837C25.8203 45.0139 25.3832 45.0288 24.9892 44.8784C24.5966 44.7286 24.2796 44.4272 24.1073 44.0414C23.9886 43.7757 23.9447 43.4837 23.9834 43.1769L24.0166 42.9911L24.0668 42.8262L25.3079 39.4507C26.0439 37.4198 26.5852 35.3222 26.9239 33.1917L27.0415 32.3912L27.1413 31.5772L27.3403 29.8382C27.3582 29.6889 27.346 29.5376 27.3045 29.3935C27.2631 29.2497 27.1935 29.1162 27.1 29.0012C27.007 28.8867 26.8923 28.7929 26.7631 28.7253C26.6343 28.658 26.4937 28.6182 26.3535 28.6083C24.0561 28.4627 21.7692 28.1774 19.507 27.7543C19.3016 27.7166 19.1058 27.6379 18.9308 27.5231C18.7564 27.4085 18.6063 27.2602 18.489 27.0868C18.3721 26.9139 18.2902 26.7195 18.2479 26.5149C18.2055 26.3104 18.2035 26.0993 18.2404 25.902C18.2758 25.6952 18.3515 25.4975 18.4633 25.3202C18.5754 25.1425 18.7216 24.9892 18.8933 24.869C19.0655 24.7486 19.26 24.6643 19.4652 24.6211C19.6707 24.5779 19.8826 24.5768 20.0823 24.6167C26.6344 25.8478 33.3529 25.8478 39.898 24.618C40.1283 24.5717 40.366 24.5779 40.5936 24.6361ZM32.8056 16.183C34.352 17.7552 34.352 20.3006 32.8056 21.8729C31.2543 23.4501 28.7353 23.4501 27.184 21.8729C25.6376 20.3007 25.6376 17.7552 27.184 16.183C28.7353 14.6057 31.2543 14.6057 32.8056 16.183Z"
+                fill="currentColor"
+              />
+            </g>
+            <defs>
+              <clipPath id="accessibility-launcher-clip">
+                <rect width="60" height="60" fill="white" />
+              </clipPath>
+            </defs>
+          </svg>
+        </div>
       </button>
 
       {isOpen ? (
@@ -3952,60 +4471,6 @@ function HomeHeroBackdrop() {
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
       <div className="hero-fade-soft absolute inset-x-0 top-0 h-32 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),transparent)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_50%,rgba(244,180,0,0.1),transparent_50%)]" />
-    </div>
-  );
-}
-
-function HomeHeroArtwork() {
-  const [pointer, setPointer] = useState({ x: 0, y: 0 });
-
-  const handleMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2;
-    const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
-    setPointer({ x, y });
-  };
-
-  const handleLeave = () => {
-    setPointer({ x: 0, y: 0 });
-  };
-
-  return (
-    <div
-      className="relative h-full min-h-[28rem] overflow-visible sm:min-h-[33rem] lg:min-h-[40rem]"
-      onMouseMove={handleMove}
-      onMouseLeave={handleLeave}
-    >
-      <div
-        className="absolute right-[8%] top-[8%] h-[23rem] w-[23rem] opacity-[0.03] sm:h-[28rem] sm:w-[28rem] lg:right-[7%] lg:top-[6%] lg:h-[35rem] lg:w-[35rem]"
-        style={{ transform: `translate(${pointer.x * -1.5}px, ${pointer.y * 1.5}px)` }}
-      >
-        <svg viewBox="0 0 400 400" aria-hidden="true" className="h-full w-full">
-          <g stroke="white" strokeWidth="6" fill="none">
-            {[0, 30, 60, 90, 120, 150].map(angle => (
-              <ellipse key={angle} cx="200" cy="200" rx="160" ry="50" transform={`rotate(${angle} 200 200)`} />
-            ))}
-            <circle cx="200" cy="200" r="60" />
-          </g>
-        </svg>
-      </div>
-
-      <div
-        className="absolute right-[10%] top-[11%] h-[18.75rem] w-[18.75rem] sm:h-[23.25rem] sm:w-[23.25rem] lg:right-[8%] lg:top-[10%] lg:h-[29.9rem] lg:w-[29.9rem]"
-        style={{ transform: `translate(${pointer.x * -4}px, ${pointer.y * 5}px) scale(0.9)` }}
-      >
-        <CircularTabletShape className="h-full w-full text-[#F28C38] drop-shadow-[0_30px_70px_rgba(242,140,56,0.16)]" />
-      </div>
-
-      <div
-        className="absolute right-[10.5%] top-[18.5%] h-[18.7rem] w-[7.15rem] sm:h-[23.1rem] sm:w-[8.25rem] lg:right-[8.8%] lg:top-[15.5%] lg:h-[28.6rem] lg:w-[9.9rem]"
-        style={{ transform: `translate(${pointer.x * -2}px, ${pointer.y * 6}px) rotate(14deg) scale(1.15)` }}
-      >
-        <svg viewBox="0 0 310.838 796" aria-hidden="true" className="h-full w-full fill-[var(--gold)] drop-shadow-[0_36px_80px_rgba(244,180,0,0.18)]">
-          <path d="M310.838 211.822C310.833 52.822 233.088 0 155.418 0 77.75 0 0 52.826 0 211.838V378.56h310.838V211.823zM0 584.16C0 743.173 77.747 796 155.42 796c77.67 0 155.418-52.828 155.418-211.838V417.447H0V584.16z" />
-        </svg>
-      </div>
-
     </div>
   );
 }
