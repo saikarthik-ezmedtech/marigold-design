@@ -73,7 +73,7 @@ type SupplyItem = {
 };
 
 const homeHeroImage =
-  '/assets/hero-doctor-pharmacy.png';
+  '/assets/hero-doctor-pharmacy.svg';
 
 const heroQuickActions = [
   {
