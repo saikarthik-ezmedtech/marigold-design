@@ -1961,6 +1961,9 @@ function HomePage({
     : 'font-ui text-[clamp(2.45rem,4.3vw,4.45rem)] font-bold leading-[0.98] tracking-[-0.035em] text-white sm:text-[clamp(2.85rem,4.7vw,4.45rem)]';
   const heroLineClass = isSpanish ? 'block max-w-[11ch] text-balance' : 'block whitespace-nowrap';
   const quickActionTopClass = isSpanish ? 'text-[14px] sm:text-[15px] lg:text-[16px]' : 'text-[15px] sm:text-[16px] lg:text-[17px]';
+  const heroImageClass = isSpanish
+    ? 'absolute inset-0 h-full w-full object-cover object-[84%_72%] sm:object-[78%_74%] lg:object-[72%_76%]'
+    : 'absolute inset-0 h-full w-full object-cover object-[84%_72%] sm:object-[78%_74%] lg:object-[72%_76%]';
   const featuredResourceThemes = [
     {
       shell: 'bg-[#f6f2eb] text-[var(--charcoal)] border-[rgba(15,118,110,0.08)]',
@@ -2010,7 +2013,7 @@ function HomePage({
           src={homeHeroImage}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover object-[84%_45%] sm:object-[78%_48%] lg:object-[72%_52%]"
+          className={heroImageClass}
           decoding="async"
           fetchPriority="high"
         />
