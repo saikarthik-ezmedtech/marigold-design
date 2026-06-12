@@ -60,6 +60,10 @@ body:has(.accessibility-high-contrast) {
     text-decoration: none;
   }
 
+  :where(a[href], button:not(:disabled), [role='button']:not([aria-disabled='true'])) {
+    cursor: pointer;
+  }
+
   img {
     display: block;
     max-width: 100%;

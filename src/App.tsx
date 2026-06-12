@@ -2038,7 +2038,7 @@ function HomePage({
                     key={item.bottom}
                     type="button"
                     onClick={() => onNavigate(item.route)}
-                    className={`group relative flex min-h-[96px] items-center gap-3 overflow-hidden rounded-[1rem] border px-4 py-4 text-left backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(15,23,42,0.18)] ${item.cardClass}`}
+                    className={`group relative flex min-h-[96px] cursor-pointer items-center gap-3 overflow-hidden rounded-[1rem] border px-4 py-4 text-left backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(15,23,42,0.18)] active:translate-y-0 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white ${item.cardClass}`}
                   >
                     <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-current opacity-20" />
                     <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${item.iconClass}`}>
