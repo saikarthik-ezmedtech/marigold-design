@@ -1561,6 +1561,19 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleToggleLanguage = () => {
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+
+    setLanguage((current) => (current === 'en' ? 'es' : 'en'));
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ left: scrollX, top: scrollY, behavior: 'auto' });
+      });
+    });
+  };
+
   const currentService = getCurrentService(route);
 
   return (
@@ -1588,12 +1601,12 @@ function App() {
           language={language}
           isMobileMenuOpen={isMobileMenuOpen}
           onToggleMenu={() => setIsMobileMenuOpen((value) => !value)}
-          onToggleLanguage={() => setLanguage((current) => (current === 'en' ? 'es' : 'en'))}
+          onToggleLanguage={handleToggleLanguage}
           onNavigate={navigate}
         />
         <div aria-hidden="true" className="h-[7.4rem] sm:h-[6.5rem]" />
 
-        <div key={language} className="contents">
+        <div className="contents">
           {route === '/' ? <HomePage onNavigate={navigate} language={language} /> : null}
           {route === '/about-us' ? <AboutPage onNavigate={navigate} /> : null}
           {route === '/services' ? <ServicesPage onNavigate={navigate} /> : null}
@@ -1694,7 +1707,7 @@ function SiteHeader({
       }`}
     >
       <div className="bg-[var(--gold)] text-[var(--charcoal)]">
-        <div className="mx-auto flex max-w-[1440px] flex-col flex-wrap items-center justify-center gap-1 px-3 py-1.5 text-center sm:flex-row sm:gap-2 sm:px-6 sm:py-2">
+        <div className="mx-auto flex min-h-[3.35rem] max-w-[1440px] flex-col flex-wrap items-center justify-center gap-1 px-3 py-1.5 text-center sm:min-h-[2.25rem] sm:flex-row sm:gap-2 sm:px-6 sm:py-2">
           <p className="text-[0.61rem] font-medium leading-[1.35] sm:leading-none sm:text-[0.72rem] lg:text-[0.84rem]">
             {t('Personalized pharmacy care and free local delivery for Kissimmee.')}
           </p>
@@ -1709,12 +1722,12 @@ function SiteHeader({
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-[3.65rem] max-w-[1440px] items-center justify-between gap-3 px-4 py-1.5 sm:min-h-[3.85rem] sm:px-6 lg:px-8">
         <button type="button" onClick={() => handleNavigate('/')} className="shrink-0">
           <BrandLockup dark={isHeroHeaderRoute} language={language} />
         </button>
 
-        <nav className="hidden flex-1 items-center justify-center gap-2 lg:flex">
+        <nav className="hidden flex-1 items-center justify-center gap-1 xl:flex">
           {navItems.map((item) => {
             const isActive = route === item.path || (route.startsWith('/services/') && item.path === '/services');
             const isContactItem = item.path === '/contact-us';
@@ -1725,7 +1738,7 @@ function SiteHeader({
                   <button
                     type="button"
                     onClick={() => handleNavigate(item.path)}
-                    className={`inline-flex items-center gap-1 border-b-2 px-5 py-3 text-center font-heading text-[1rem] font-semibold tracking-[-0.01em] transition-colors ${
+                    className={`inline-flex min-h-[2.8rem] w-[9rem] items-center justify-center gap-1 whitespace-nowrap border-b-[1px] px-3 py-1.5 text-center font-heading text-[1.02rem] font-semibold leading-tight tracking-normal transition-colors 2xl:text-[1.1rem] ${
                       isActive
                         ? isHeroHeaderRoute
                           ? 'border-[var(--gold)] text-white'
@@ -1813,7 +1826,7 @@ function SiteHeader({
                 key={item.path}
                 type="button"
                 onClick={() => handleNavigate(item.path)}
-                className={`border-b-2 px-5 py-3 text-center font-heading text-[1rem] font-semibold tracking-[-0.01em] transition-colors ${
+                className={`inline-flex min-h-[2.8rem] w-[9rem] items-center justify-center whitespace-nowrap border-b-[1px] px-3 py-1.5 text-center font-heading text-[1.02rem] font-semibold leading-tight tracking-normal transition-colors 2xl:text-[1.1rem] ${
                   isContactItem
                     ? isActive
                       ? isHeroHeaderRoute
@@ -1858,7 +1871,7 @@ function SiteHeader({
           type="button"
           onClick={onToggleMenu}
           aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-          className={`inline-flex h-11 w-11 items-center justify-center rounded-full border shadow-[0_8px_16px_rgba(0,0,0,0.08)] lg:hidden ${
+          className={`inline-flex h-11 w-11 items-center justify-center rounded-full border shadow-[0_8px_16px_rgba(0,0,0,0.08)] xl:hidden ${
             isHeroHeaderRoute ? 'border-white/18 bg-white/10 text-white backdrop-blur-md' : 'border-slate-200 bg-white text-[var(--teal)]'
           }`}
         >
@@ -1874,7 +1887,7 @@ function SiteHeader({
             animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
             exit={prefersReducedMotion ? undefined : { opacity: 0, y: -12 }}
             transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-x-0 top-full border-t border-[rgba(15,118,110,0.1)] bg-[#f7f4eb] px-4 py-4 shadow-[0_20px_40px_rgba(15,23,42,0.15)] sm:px-6 lg:hidden"
+            className="absolute inset-x-0 top-full border-t border-[rgba(15,118,110,0.1)] bg-[#f7f4eb] px-4 py-4 shadow-[0_20px_40px_rgba(15,23,42,0.15)] sm:px-6 xl:hidden"
           >
             <div className="space-y-3">
               {navItems.map((item, index) => {
@@ -1956,11 +1969,11 @@ function HomePage({
   const visibleFaqs = showAllFaqs ? homeFaqs : homeFaqs.slice(0, 4);
   const featuredResources = resourceHighlights.slice(0, 3);
   const isSpanish = language === 'es';
-  const heroTitleClass = isSpanish
-    ? 'font-ui text-[2.25rem] font-bold leading-[1] tracking-normal text-white sm:text-[2.85rem] lg:text-[3.45rem] xl:text-[3.85rem]'
-    : 'font-ui text-[clamp(2.45rem,4.3vw,4.45rem)] font-bold leading-[0.98] tracking-[-0.035em] text-white sm:text-[clamp(2.85rem,4.7vw,4.45rem)]';
-  const heroLineClass = isSpanish ? 'block max-w-[11ch] text-balance' : 'block whitespace-nowrap';
-  const quickActionTopClass = isSpanish ? 'text-[14px] sm:text-[15px] lg:text-[16px]' : 'text-[15px] sm:text-[16px] lg:text-[17px]';
+  const heroTitleClass =
+    'hero-title font-ui min-h-[5.8rem] max-w-[20ch] text-[2.25rem] font-bold tracking-normal text-white sm:min-h-[6.8rem] sm:text-[2.85rem] lg:min-h-[7.7rem] lg:text-[3.45rem] xl:text-[3.85rem]';
+  const heroLineClass = 'block whitespace-nowrap';
+  const quickActionTopClass = 'text-[13px] font-semibold leading-tight sm:text-[15px] lg:text-[16px]';
+  const quickActionBottomClass = 'text-[13px] font-semibold leading-tight sm:text-[15px]';
   const featuredResourceThemes = [
     {
       shell: 'bg-[#f6f2eb] text-[var(--charcoal)] border-[rgba(15,118,110,0.08)]',
@@ -2018,18 +2031,18 @@ function HomePage({
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,18,17,0.18)_0%,rgba(4,18,17,0.02)_44%,rgba(4,18,17,0.24)_100%)]" />
         <HomeHeroBackdrop />
         <div className="grid min-h-[calc(100svh-7.4rem)] w-full items-center px-4 py-12 sm:min-h-[calc(100svh-6.5rem)] sm:px-8 sm:py-14 lg:px-[clamp(2rem,5vw,6rem)] lg:py-16">
-          <div className="relative z-10 flex max-w-[34rem] flex-col justify-center self-center pt-8 text-left sm:pt-12 lg:pt-16">
+          <div className={`hero-content relative z-10 flex flex-col justify-center self-center pt-8 text-left sm:pt-12 lg:pt-16 ${isSpanish ? 'translate-y-0' : ''}`}>
             <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#fff5cc]">{t('Personalized care in Kissimmee')}</p>
             <h1 className={heroTitleClass}>
               <span className={`mt-5 ${heroLineClass}`}>{t('Your Health.')}</span>
               <span className={`${heroLineClass} text-[rgba(255,245,216,0.98)]`}>{t('Our Priority.')}</span>
             </h1>
-            <p className="mt-7 max-w-[31rem] text-[1rem] leading-8 text-white/82 sm:text-[1.08rem]">
+            <p className={`hero-description mt-7 min-h-[6rem] text-[1rem] leading-8 text-white/82 sm:min-h-[4rem] sm:text-[1.08rem] ${isSpanish ? 'max-w-[52ch]' : ''}`}>
               {t(
                 'Personalized pharmacy care, refills, delivery, immunizations, and wellness support for Kissimmee.',
               )}
             </p>
-            <div className="mt-10 grid w-full max-w-[460px] grid-cols-2 justify-start gap-3 sm:mt-12 sm:gap-4">
+            <div className="hero-actions mt-10 grid grid-cols-1 justify-start gap-3 min-[360px]:grid-cols-2 sm:mt-12 sm:gap-4">
               {heroQuickActions.map((item) => {
                 const Icon = item.icon;
 
@@ -2038,15 +2051,15 @@ function HomePage({
                     key={item.bottom}
                     type="button"
                     onClick={() => onNavigate(item.route)}
-                    className={`group relative flex min-h-[96px] cursor-pointer items-center gap-3 overflow-hidden rounded-[1rem] border px-4 py-4 text-left backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(15,23,42,0.18)] active:translate-y-0 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white ${item.cardClass}`}
+                    className={`group relative flex min-h-[108px] cursor-pointer items-center gap-2 overflow-hidden rounded-[1rem] border px-3 py-3 text-left backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(15,23,42,0.18)] active:translate-y-0 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:min-h-[104px] sm:gap-3 sm:px-4 sm:py-4 ${item.cardClass}`}
                   >
                     <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-current opacity-20" />
-                    <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${item.iconClass}`}>
+                    <div className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10 ${item.iconClass}`}>
                       <Icon size={19} className="transition-transform duration-300 group-hover:scale-110" />
                     </div>
-                    <div className="min-w-0">
-                      <div className={`${quickActionTopClass} whitespace-nowrap font-semibold leading-tight`}>{t(item.top)}</div>
-                      <div className={`mt-0.5 whitespace-nowrap text-[14px] font-semibold leading-tight sm:text-[15px] ${item.bottomClass}`}>{t(item.bottom)}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className={`${quickActionTopClass} [overflow-wrap:anywhere]`}>{t(item.top)}</div>
+                      <div className={`mt-0.5 ${quickActionBottomClass} [overflow-wrap:anywhere] ${item.bottomClass}`}>{t(item.bottom)}</div>
                     </div>
                   </button>
                 );
@@ -2061,7 +2074,7 @@ function HomePage({
         <div className="container-shell">
           <div className="max-w-3xl">
             <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[var(--teal)]">How it works</p>
-            <h2 className="mt-4 font-heading text-[clamp(2.3rem,4vw,3.7rem)] font-semibold leading-[0.98] tracking-[-0.05em] text-[var(--charcoal)]">
+            <h2 className="mt-4 min-h-[7.5rem] font-heading text-[clamp(2.3rem,4vw,3.7rem)] font-semibold leading-[0.98] tracking-normal text-[var(--charcoal)] sm:min-h-[4.5rem]">
               Getting pharmacy support should feel effortless.
             </h2>
           </div>
@@ -2107,7 +2120,7 @@ function HomePage({
                 ),
               },
             ].map((item) => (
-              <article key={item.title} className="px-1 py-2 sm:px-2">
+              <article key={item.title} className="min-h-[17rem] px-1 py-2 sm:px-2">
                 <div className="grid gap-4 sm:block">
                   <div className="flex items-start justify-between gap-4 sm:block">
                     <div className="flex-shrink-0">{item.icon}</div>
@@ -2150,7 +2163,7 @@ function HomePage({
                   key={`${card.top}-${card.bottom}`}
                   type="button"
                   onClick={() => onNavigate(card.route)}
-                  className="group relative min-h-[18rem] overflow-hidden rounded-[1.6rem] bg-[#0c1c25] text-left shadow-[0_22px_48px_rgba(15,118,110,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(15,118,110,0.12)]"
+                  className="group relative min-h-[21rem] overflow-hidden rounded-[1.6rem] bg-[#0c1c25] text-left shadow-[0_22px_48px_rgba(15,118,110,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(15,118,110,0.12)]"
                 >
                   <img
                     src={card.image}
@@ -2162,7 +2175,7 @@ function HomePage({
                   <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/58 to-black/24" />
                   <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-white/72">{t(card.category)}</p>
-                    <h3 className="mt-3 font-heading text-[clamp(1.8rem,3vw,2.55rem)] font-semibold leading-[0.96] tracking-[-0.05em] text-white">
+                    <h3 className="mt-3 min-h-[5.1rem] font-heading text-[clamp(1.8rem,3vw,2.55rem)] font-semibold leading-[0.98] tracking-normal text-white">
                       <span className="block">{t(card.top)}</span>
                       <span className="block">{t(card.bottom)}</span>
                     </h3>
@@ -2230,11 +2243,11 @@ function HomePage({
                   href={item.href}
                   target="_blank"
                   rel="noreferrer"
-                  className={`group relative min-h-[20rem] overflow-hidden rounded-[1.8rem] border shadow-[0_22px_48px_rgba(15,118,110,0.12)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_54px_rgba(15,118,110,0.16)] ${theme.shell}`}
+                  className={`group relative min-h-[23rem] overflow-hidden rounded-[1.8rem] border shadow-[0_22px_48px_rgba(15,118,110,0.12)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_54px_rgba(15,118,110,0.16)] ${theme.shell}`}
                 >
                   <div className={`pointer-events-none absolute inset-0 ${theme.accent}`} />
                   <div className="pointer-events-none absolute bottom-5 right-5 h-24 w-24 rounded-full border border-white/18 bg-white/8 blur-[1px]" />
-                  <div className="relative z-10 flex min-h-[20rem] flex-col justify-between p-6">
+                  <div className="relative z-10 flex min-h-[23rem] flex-col justify-between p-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className={`inline-flex rounded-full px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.24em] ${theme.eyebrow}`}>
                         {item.category}
@@ -2295,7 +2308,7 @@ function HomePage({
                 {homeTestimonials.map((item) => (
                   <article
                     key={item.quote}
-                    className="min-w-[19rem] snap-start rounded-[1.5rem] border border-[rgba(255,255,255,0.16)] bg-white p-6 shadow-[0_18px_40px_rgba(15,118,110,0.08)] sm:min-w-[22rem] lg:min-w-[24rem]"
+                    className="min-h-[20rem] min-w-[19rem] snap-start rounded-[1.5rem] border border-[rgba(255,255,255,0.16)] bg-white p-6 shadow-[0_18px_40px_rgba(15,118,110,0.08)] sm:min-w-[22rem] lg:min-h-[22rem] lg:min-w-[24rem]"
                   >
                     <div className="mb-5 flex items-center gap-1 text-[var(--gold)]">
                       {Array.from({ length: 5 }).map((_, index) => (
@@ -2353,7 +2366,7 @@ function HomePage({
                     <button
                       type="button"
                       onClick={() => setOpenFaqIndex(isOpen ? -1 : index)}
-                      className={`flex w-full items-center justify-between gap-5 px-1 py-5 text-left transition ${
+                      className={`flex min-h-[5.75rem] w-full items-center justify-between gap-5 px-1 py-5 text-left transition ${
                         isOpen ? 'text-[var(--teal)]' : 'text-[var(--charcoal)]'
                       }`}
                     >
@@ -2744,7 +2757,7 @@ function AboutPage({ onNavigate }: { onNavigate: (path: RoutePath) => void }) {
         {storySections.map((section) => (
           <div
             key={section.eyebrow}
-            className={`grid lg:min-h-[26rem] ${
+            className={`grid lg:min-h-[31rem] ${
               section.eyebrow === 'Our people'
                 ? 'lg:grid-cols-[0.4fr_0.6fr]'
                 : 'lg:grid-cols-[0.4fr_0.6fr]'
@@ -2766,7 +2779,7 @@ function AboutPage({ onNavigate }: { onNavigate: (path: RoutePath) => void }) {
             <div className={`flex items-center px-7 py-10 sm:px-9 sm:py-11 lg:px-8 lg:py-12 ${section.panelClass}`}>
               <div className="max-w-none lg:max-w-[42rem]">
                 <p className={`font-heading text-[11px] font-semibold uppercase tracking-[0.18em] ${section.eyebrowClass}`}>{section.eyebrow}</p>
-                <h3 className={`mt-5 font-ui text-[41px] font-semibold leading-[1.02] tracking-[-0.04em] ${section.titleClass}`}>
+                <h3 className={`mt-5 min-h-[5.25rem] font-ui text-[41px] font-semibold leading-[1.02] tracking-normal ${section.titleClass}`}>
                   {section.title}
                 </h3>
                 <div className={`mt-6 space-y-4 text-[16px] leading-8 ${section.bodyClass}`}>
@@ -2805,7 +2818,7 @@ function AboutPage({ onNavigate }: { onNavigate: (path: RoutePath) => void }) {
             {values.map((value, index) => (
               <article
                 key={value.title}
-                className={`flex min-h-[14rem] flex-col justify-start border-b border-[rgba(15,118,110,0.16)] py-8 md:px-8 md:py-10 ${
+                className={`flex min-h-[16rem] flex-col justify-start border-b border-[rgba(15,118,110,0.16)] py-8 md:px-8 md:py-10 ${
                   index % 2 === 0 ? 'md:border-r' : ''
                 }`}
               >
@@ -2840,7 +2853,7 @@ function ServicesPage({ onNavigate }: { onNavigate: (path: RoutePath) => void })
       <div className="page-shell relative z-10">
         <div className="overflow-hidden rounded-[34px] bg-transparent shadow-none">
           <div className="relative isolate px-4 pt-0 pb-5 sm:px-6 sm:pt-0 sm:pb-6 lg:px-8 lg:pt-0 lg:pb-8">
-            <div className="relative z-10 flex min-h-[11rem] max-w-4xl items-start lg:min-h-[13rem]">
+            <div className="relative z-10 flex min-h-[14rem] max-w-4xl items-start lg:min-h-[15rem]">
               <div className="max-w-3xl pt-0 pb-2">
                 <p className="inline-flex rounded-full bg-[rgba(15,118,110,0.08)] px-5 py-2.5 text-[0.95rem] font-semibold uppercase tracking-[0.22em] text-[var(--teal)]">
                   Services
@@ -2863,7 +2876,7 @@ function ServicesPage({ onNavigate }: { onNavigate: (path: RoutePath) => void })
               key={card.slug}
               type="button"
               onClick={() => onNavigate(`/services/${card.slug}`)}
-              className="group relative flex min-h-[18.75rem] flex-col overflow-hidden rounded-[1.6rem] bg-[#0c1c25] text-left shadow-[0_22px_48px_rgba(15,118,110,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(15,118,110,0.12)]"
+              className="group relative flex min-h-[22rem] flex-col overflow-hidden rounded-[1.6rem] bg-[#0c1c25] text-left shadow-[0_22px_48px_rgba(15,118,110,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(15,118,110,0.12)]"
             >
               <img
                 src={card.image}
@@ -2873,7 +2886,7 @@ function ServicesPage({ onNavigate }: { onNavigate: (path: RoutePath) => void })
                 decoding="async"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/60 to-black/24" />
-              <div className="relative z-10 flex min-h-[18.75rem] flex-1 flex-col justify-end p-5 sm:p-6">
+              <div className="relative z-10 flex min-h-[22rem] flex-1 flex-col justify-end p-5 sm:p-6">
                 <h3 className="font-heading text-[clamp(1.8rem,3vw,2.6rem)] font-semibold leading-[0.96] tracking-[-0.05em] text-white">
                   {card.title}
                 </h3>
@@ -2934,12 +2947,12 @@ function ServiceDetailPage({
     <ContentPageShell eyebrow="Services" title={service.title} intro={service.intro}>
       <div className="space-y-10">
         <div className="overflow-hidden rounded-[2.2rem] border border-[rgba(15,118,110,0.08)] bg-[#0c1c25] shadow-[0_24px_60px_rgba(15,23,42,0.16)]">
-          <div className="relative min-h-[24rem] sm:min-h-[28rem]">
+          <div className="relative min-h-[28rem] sm:min-h-[31rem]">
             <img src={service.image} alt={service.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,14,19,0.16),rgba(5,14,19,0.78))]" />
             <div className="pointer-events-none absolute right-[-2rem] top-[-2rem] h-32 w-32 rounded-full bg-[rgba(244,180,0,0.16)] blur-3xl" />
 
-            <div className="relative z-10 grid min-h-[24rem] gap-8 p-7 sm:min-h-[28rem] sm:p-9 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+            <div className="relative z-10 grid min-h-[28rem] gap-8 p-7 sm:min-h-[31rem] sm:p-9 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
               <div className="max-w-2xl self-end">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-white/72">{service.category}</p>
                 <h2 className="mt-3 font-heading text-[clamp(2.4rem,4.4vw,4.2rem)] font-semibold leading-[0.96] tracking-[-0.05em] text-white">
@@ -3042,7 +3055,7 @@ function ServiceDetailPage({
           {service.details.map((item, index) => (
             <div
               key={item}
-              className={`rounded-[1.45rem] border p-5 text-left shadow-[0_14px_28px_rgba(15,118,110,0.06)] ${supportThemes[index % supportThemes.length]}`}
+              className={`min-h-[12rem] rounded-[1.45rem] border p-5 text-left shadow-[0_14px_28px_rgba(15,118,110,0.06)] ${supportThemes[index % supportThemes.length]}`}
             >
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/84 text-[var(--teal)] shadow-[0_10px_18px_rgba(15,118,110,0.08)]">
                 <CheckCircle2 size={18} />
@@ -3071,7 +3084,7 @@ function ServiceDetailPage({
               key={item.slug}
               type="button"
               onClick={() => onNavigate(`/services/${item.slug}`)}
-              className="group relative min-h-[18rem] overflow-hidden rounded-[1.6rem] bg-[#0c1c25] text-left shadow-[0_22px_48px_rgba(15,118,110,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(15,118,110,0.12)]"
+              className="group relative min-h-[21rem] overflow-hidden rounded-[1.6rem] bg-[#0c1c25] text-left shadow-[0_22px_48px_rgba(15,118,110,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_56px_rgba(15,118,110,0.12)]"
             >
               <img
                 src={item.image}
@@ -3081,7 +3094,7 @@ function ServiceDetailPage({
                 decoding="async"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/58 to-black/24" />
-              <div className="relative z-10 flex min-h-[18rem] flex-col justify-end p-5 sm:p-6">
+              <div className="relative z-10 flex min-h-[21rem] flex-col justify-end p-5 sm:p-6">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-white/72">{item.category}</p>
                 <h3 className="mt-3 font-heading text-[clamp(1.6rem,2.4vw,2.15rem)] font-semibold leading-[0.98] tracking-[-0.045em] text-white">
                   {item.title}
@@ -3114,7 +3127,7 @@ function MedicalSuppliesPage() {
     >
       <div className="space-y-12">
         <div className="grid gap-8 lg:grid-cols-[0.98fr_1.02fr]">
-          <div className="rounded-[1.9rem] border border-[rgba(15,118,110,0.1)] bg-white p-8 shadow-[0_22px_48px_rgba(15,118,110,0.08)] sm:p-10">
+          <div className="min-h-[32rem] rounded-[1.9rem] border border-[rgba(15,118,110,0.1)] bg-white p-8 shadow-[0_22px_48px_rgba(15,118,110,0.08)] sm:p-10">
             <div className="rounded-[1.7rem] bg-[linear-gradient(135deg,#fff,rgba(15,118,110,0.05))] p-6">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--teal)]">Medical supplies support</p>
               <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.03em] text-[var(--charcoal)]">
@@ -3163,7 +3176,7 @@ function MedicalSuppliesPage() {
           {supplyItems.map((item) => (
             <div
               key={item.title}
-              className="group overflow-hidden rounded-[1.6rem] border border-[rgba(15,118,110,0.1)] bg-white shadow-[0_18px_40px_rgba(15,118,110,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_rgba(15,118,110,0.1)]"
+              className="group min-h-[22rem] overflow-hidden rounded-[1.6rem] border border-[rgba(15,118,110,0.1)] bg-white shadow-[0_18px_40px_rgba(15,118,110,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_rgba(15,118,110,0.1)]"
             >
               <div className="relative aspect-[1.45/1] overflow-hidden">
                 <img
@@ -3259,7 +3272,7 @@ function ResourcesPage() {
         href={item.href}
         target="_blank"
         rel="noreferrer"
-        className={`group relative min-h-[13.5rem] overflow-hidden rounded-[1.8rem] border shadow-[0_22px_48px_rgba(15,118,110,0.12)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_54px_rgba(15,118,110,0.16)] ${
+        className={`group relative min-h-[17.5rem] overflow-hidden rounded-[1.8rem] border shadow-[0_22px_48px_rgba(15,118,110,0.12)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_54px_rgba(15,118,110,0.16)] ${
           hasImage ? 'border-white/12 bg-[#0c1c25] text-white' : theme.shell
         }`}
       >
@@ -3298,7 +3311,7 @@ function ResourcesPage() {
 
           <div className="mt-4 max-w-xl">
             <h3
-              className={`font-heading font-bold leading-[1.08] tracking-[-0.05em] ${
+              className={`min-h-[5.2rem] font-heading font-bold leading-[1.08] tracking-normal ${
                 size === 'feature' ? 'text-[clamp(1.9rem,2.6vw,2.35rem)]' : 'text-[clamp(1.9rem,2.6vw,2.35rem)]'
               }`}
             >
@@ -4001,14 +4014,14 @@ function ContentPageShell({
       )}
       <div className="page-shell relative z-10">
         {eyebrow || title || intro ? (
-          <div className="max-w-[52rem] space-y-4">
+          <div className="min-h-[12rem] max-w-[52rem] space-y-4 sm:min-h-[10rem] lg:min-h-[11rem]">
             {eyebrow ? <SectionEyebrow>{eyebrow}</SectionEyebrow> : null}
             {title ? (
-              <h1 className={`font-heading text-[clamp(2.15rem,4vw,3.4rem)] font-semibold leading-[1] tracking-[-0.04em] text-[var(--charcoal)] ${titleClassName}`}>
+              <h1 className={`min-h-[6.8rem] font-heading text-[clamp(2.15rem,4vw,3.4rem)] font-semibold leading-[1] tracking-normal text-[var(--charcoal)] sm:min-h-[3.5rem] ${titleClassName}`}>
                 {title}
               </h1>
             ) : null}
-            {intro ? <p className="text-lg leading-8 text-[var(--slate)]">{intro}</p> : null}
+            {intro ? <p className="min-h-[4rem] text-lg leading-8 text-[var(--slate)]">{intro}</p> : null}
           </div>
         ) : null}
         <div className={eyebrow || title || intro ? 'mt-6' : ''}>{children}</div>

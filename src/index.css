@@ -29,6 +29,7 @@
 
 html {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -45,6 +46,38 @@ body:has(.accessibility-high-contrast) {
 ::selection {
   background: rgba(15, 118, 110, 0.16);
   color: var(--charcoal);
+}
+
+:where(h1, h2, h3, h4, p, li, a, button, label) {
+  overflow-wrap: anywhere;
+}
+
+@supports (text-wrap: pretty) {
+  :where(h1, h2, h3, h4, p, li) {
+    text-wrap: pretty;
+  }
+}
+
+.hero-content {
+  max-width: 650px;
+  min-height: 320px;
+  transition:
+    opacity 240ms ease,
+    transform 240ms ease;
+}
+
+.hero-title {
+  max-width: 20ch;
+  line-height: 0.95;
+}
+
+.hero-description {
+  max-width: 55ch;
+}
+
+.hero-actions {
+  max-width: 500px;
+  min-height: 12.5rem;
 }
 
 #root {
