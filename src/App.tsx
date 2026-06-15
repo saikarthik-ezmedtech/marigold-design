@@ -854,7 +854,7 @@ const resourceLinks = [
     description: 'Patient-friendly safe-use tips for common medicines, OTC products, storage, and daily routines.',
     href: 'https://www.safemedication.com',
     cta: 'Visit resource',
-    image: 'https://images.unsplash.com/photo-1550572017-edd951aa8f72?auto=format&fit=crop&w=1400&q=80',
+    image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=1400&q=80',
   },
   {
     category: 'Resource',
@@ -862,7 +862,7 @@ const resourceLinks = [
     description: 'Medication safety education and practical prevention resources for patients and caregivers.',
     href: 'https://www.ismp.org',
     cta: 'Learn more',
-    image: 'https://images.unsplash.com/photo-1580281657527-47f249e8f6d5?auto=format&fit=crop&w=1400&q=80',
+    image: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1400&q=80',
   },
 ];
 
@@ -961,7 +961,7 @@ const resourceHighlights = [
     category: 'Consumer health',
     title: 'Over-the-counter product information',
     description: 'Clear product information for common over-the-counter wellness needs.',
-    href: 'https://www.chpa.org',
+    href: 'https://www.fda.gov/consumers',
     image:
       'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?auto=format&fit=crop&w=1200&q=80',
     cta: 'Explore all',
@@ -981,7 +981,7 @@ const resourceHighlights = [
     description: 'Practical safety resources for patients and caregivers to help prevent mistakes.',
     href: 'https://www.ismp.org',
     image:
-      'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80',
     cta: 'Learn more',
   },
 ];
@@ -2243,26 +2243,36 @@ function HomePage({
                   href={item.href}
                   target="_blank"
                   rel="noreferrer"
-                  className={`group relative min-h-[23rem] overflow-hidden rounded-[1.8rem] border shadow-[0_22px_48px_rgba(15,118,110,0.12)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_54px_rgba(15,118,110,0.16)] ${theme.shell}`}
+                  className={`group flex min-h-[25rem] flex-col overflow-hidden rounded-[1.8rem] border shadow-[0_22px_48px_rgba(15,118,110,0.12)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_54px_rgba(15,118,110,0.16)] ${theme.shell}`}
                 >
-                  <div className={`pointer-events-none absolute inset-0 ${theme.accent}`} />
-                  <div className="pointer-events-none absolute bottom-5 right-5 h-24 w-24 rounded-full border border-white/18 bg-white/8 blur-[1px]" />
-                  <div className="relative z-10 flex min-h-[23rem] flex-col justify-between p-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className={`inline-flex rounded-full px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.24em] ${theme.eyebrow}`}>
+                  <div className="relative h-44 shrink-0 overflow-hidden bg-[#0c1c25]">
+                    <img
+                      src={item.image}
+                      alt=""
+                      aria-hidden="true"
+                      className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,14,19,0.04),rgba(5,14,19,0.48))]" />
+                    <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5">
+                      <div className="inline-flex rounded-full bg-white/90 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--teal)] backdrop-blur-md">
                         {item.category}
                       </div>
-                      <span className={`inline-flex h-12 w-12 items-center justify-center rounded-[1rem] ${theme.iconWrap}`}>
+                      <span className="inline-flex h-12 w-12 items-center justify-center rounded-[1rem] bg-white/88 text-[var(--teal)] backdrop-blur-md">
                         <Icon size={22} />
                       </span>
                     </div>
-                    <div className="mt-8">
+                  </div>
+                  <div className="relative z-10 flex flex-1 flex-col justify-between p-6">
+                    <div className={`pointer-events-none absolute inset-0 ${theme.accent}`} />
+                    <div className="relative z-10">
                       <h3 className="font-heading text-2xl leading-tight tracking-[-0.04em]">
                         {item.title}
                       </h3>
                       <p className={`mt-4 text-sm leading-7 ${theme.body}`}>{item.description}</p>
                     </div>
-                    <div className="mt-8 flex items-center justify-between gap-3">
+                    <div className="relative z-10 mt-8 flex items-center justify-between gap-3">
                       <span className={`text-sm font-semibold ${theme.cta}`}>{item.cta}</span>
                       <span className={`inline-flex h-10 w-10 items-center justify-center rounded-full border border-current/20 transition group-hover:-translate-y-0.5 ${theme.cta}`}>
                         <ArrowRight size={16} />
@@ -3272,12 +3282,12 @@ function ResourcesPage() {
         href={item.href}
         target="_blank"
         rel="noreferrer"
-        className={`group relative min-h-[17.5rem] overflow-hidden rounded-[1.8rem] border shadow-[0_22px_48px_rgba(15,118,110,0.12)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_54px_rgba(15,118,110,0.16)] ${
-          hasImage ? 'border-white/12 bg-[#0c1c25] text-white' : theme.shell
+        className={`group flex min-h-[24rem] flex-col overflow-hidden rounded-[1.8rem] border shadow-[0_22px_48px_rgba(15,118,110,0.12)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_54px_rgba(15,118,110,0.16)] ${
+          hasImage ? 'border-[rgba(15,118,110,0.08)] bg-white text-[var(--charcoal)]' : theme.shell
         }`}
       >
         {hasImage ? (
-          <>
+          <div className="relative h-44 shrink-0 overflow-hidden bg-[#0c1c25]">
             <img
               src={item.image}
               alt=""
@@ -3286,8 +3296,16 @@ function ResourcesPage() {
               loading="lazy"
               decoding="async"
             />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,14,19,0.16),rgba(5,14,19,0.84))]" />
-          </>
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,14,19,0.04),rgba(5,14,19,0.5))]" />
+            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5">
+              <p className="inline-flex rounded-full bg-white/90 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--teal)] backdrop-blur-md">
+                {item.category}
+              </p>
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-[1rem] bg-white/88 text-[var(--teal)] backdrop-blur-md">
+                <Icon size={22} />
+              </span>
+            </div>
+          </div>
         ) : (
           <>
             <div className={`pointer-events-none absolute inset-0 ${theme.accent}`} />
@@ -3295,21 +3313,19 @@ function ResourcesPage() {
           </>
         )}
 
-        <div className="relative z-10 flex h-full flex-col justify-between p-4 sm:p-5">
-          <div className="flex items-start justify-between gap-4">
-            <p className={`inline-flex rounded-full px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.24em] ${
-              hasImage ? 'bg-white/14 text-white backdrop-blur-md' : theme.eyebrow
-            }`}>
-              {item.category}
-            </p>
-            <span className={`inline-flex h-12 w-12 items-center justify-center rounded-[1rem] ${
-              hasImage ? 'bg-white/14 text-white backdrop-blur-md' : theme.iconWrap
-            }`}>
-              <Icon size={22} />
-            </span>
-          </div>
+        <div className="relative z-10 flex flex-1 flex-col justify-between p-4 sm:p-5">
+          {!hasImage ? (
+            <div className="flex items-start justify-between gap-4">
+              <p className={`inline-flex rounded-full px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.24em] ${theme.eyebrow}`}>
+                {item.category}
+              </p>
+              <span className={`inline-flex h-12 w-12 items-center justify-center rounded-[1rem] ${theme.iconWrap}`}>
+                <Icon size={22} />
+              </span>
+            </div>
+          ) : null}
 
-          <div className="mt-4 max-w-xl">
+          <div className={`${hasImage ? '' : 'mt-4'} max-w-xl`}>
             <h3
               className={`min-h-[5.2rem] font-heading font-bold leading-[1.08] tracking-normal ${
                 size === 'feature' ? 'text-[clamp(1.9rem,2.6vw,2.35rem)]' : 'text-[clamp(1.9rem,2.6vw,2.35rem)]'
@@ -3317,13 +3333,13 @@ function ResourcesPage() {
             >
               {item.title}
             </h3>
-            <p className={`mt-1.5 max-w-xl text-sm leading-6 sm:text-[15px] ${hasImage ? 'text-white/84' : theme.body}`}>{item.description}</p>
+            <p className={`mt-1.5 max-w-xl text-sm leading-6 sm:text-[15px] ${hasImage ? 'text-[var(--slate)]' : theme.body}`}>{item.description}</p>
           </div>
 
           <div className="mt-4 flex items-center justify-between gap-3">
-            <span className={`text-sm font-semibold ${hasImage ? 'text-white' : theme.cta}`}>{item.cta}</span>
+            <span className={`text-sm font-semibold ${hasImage ? 'text-[var(--teal)]' : theme.cta}`}>{item.cta}</span>
             <span className={`inline-flex h-10 w-10 items-center justify-center rounded-full border border-current/20 transition group-hover:-translate-y-0.5 ${
-              hasImage ? 'text-white' : theme.cta
+              hasImage ? 'text-[var(--teal)]' : theme.cta
             }`}>
               <ArrowRight size={16} />
             </span>
@@ -3859,7 +3875,7 @@ function InsuranceAcceptedPage({ onNavigate }: { onNavigate: (path: RoutePath) =
     <ContentPageShell
       title="Insurance Accepted"
       eyebrow="Home > Insurance Accepted"
-      intro="Broadway-inspired coverage support, adapted for Marigold Pharmacy with clear insurance guidance and a more personal neighborhood feel."
+      intro="Clear coverage support for Marigold Pharmacy patients with straightforward insurance guidance and a more personal neighborhood feel."
     >
       <div className="grid items-stretch gap-8 lg:grid-cols-[1.05fr_0.95fr]">
         <div className="h-full overflow-hidden rounded-[1.9rem] border border-[rgba(15,118,110,0.1)] bg-[#0c1c25] shadow-[0_24px_60px_-36px_rgba(15,23,42,0.42)]">
@@ -3895,7 +3911,7 @@ function InsuranceAcceptedPage({ onNavigate }: { onNavigate: (path: RoutePath) =
           </h2>
           <div className="mt-5 space-y-4 text-base leading-8 text-[var(--slate)]">
             <p>
-              Broadway Pharmacy accepts most insurance plans as payment for your prescriptions. You only need to present your
+              Marigold Pharmacy accepts most insurance plans as payment for your prescriptions. You only need to present your
               prescription card to our staff, and we&apos;ll take care of the rest.
             </p>
             <p>
